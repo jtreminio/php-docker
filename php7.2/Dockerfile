@@ -50,7 +50,6 @@ RUN ln -s /etc/php/cli.ini  /etc/php/${PHP_VER}/cli/conf.d/zzzz_custom.ini &&\
     rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
     ln -s /etc/php/fpm.conf /etc/php/${PHP_VER}/fpm/php-fpm.conf
 
-# Credit to https://github.com/phpdocker-io/base-images for PHP-FPM logging bug workaround
 RUN echo "#!/bin/bash" > /usr/bin/php-fpm &&\
     echo "/usr/sbin/php-fpm${PHP_VER} -F -R -O 2>&1 | sed -u 's,.*: \\\"\(.*\)$,\1,'| sed -u 's,\"$,,' 1>&1" \
 >> /usr/bin/php-fpm &&\
