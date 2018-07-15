@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+docker image build \
+  -t jtreminio/php:7.2 \
+  -t jtreminio/php:7.2.27 \
+  -t jtreminio/php:latest \
+  php7.2
+
+docker image build \
+  -t jtreminio/php:7.1 \
+  -t jtreminio/php:7.1.19 \
+  php7.1
+
+docker image build \
+  -t jtreminio/php:7.0 \
+  -t jtreminio/php:7.0.30 \
+  php7.0
+
+docker image build \
+  -t jtreminio/php:5.6 \
+  -t jtreminio/php:5.6.36 \
+  php5.6
