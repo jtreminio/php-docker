@@ -1,61 +1,104 @@
-# Official PHP images used by Dashtainer.com
+#### Supported tags and respective `Dockerfile` links
 
-These images are built from 
-[Ondřej Surý's PPA](https://launchpad.net/~ondrej/+archive/ubuntu/php)
+* `7.2.27`, `7.2`, `latest` ([php7.2/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.2/Dockerfile))
+* `7.1.19`, `7.1` ([php7.1/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.1/Dockerfile))
+* `7.0.30`, `7.0` ([php7.0/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.0/Dockerfile))
+* `5.6.36`, `5.6` ([php5.6/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php5.6/Dockerfile))
 
-[Docker Hub link](https://hub.docker.com/r/jtreminio/php/)
+## How to use this image
 
-The most common PHP modules are baked in:
+### With Command Line
 
-- calendar [[book](http://php.net/manual/en/book.calendar.php)]
-- cli
-- curl [[book](http://php.net/manual/en/book.curl.php)]
-- ctype [[book](http://php.net/manual/en/book.ctype.php)]
-- dom [[book](http://php.net/manual/en/book.dom.php)]
-- exif [[book](http://php.net/manual/en/book.exif.php)]
-- fileinfo [[book](http://php.net/manual/en/book.fileinfo.php)]
-- fpm [[book](http://php.net/manual/en/install.fpm.php)]
-- ftp [[book](http://php.net/manual/en/book.ftp.php)]
-- gettext [[book](http://php.net/manual/en/book.gettext.php)]
-- iconv [[book](http://php.net/manual/en/ref.iconv.php)]
-- igbinary
-- imagick [[book](http://php.net/manual/en/book.imagick.php)]
-- intl [[book](http://php.net/manual/en/book.intl.php)]
-- json [[book](http://php.net/manual/en/book.json.php)]
-- mbstring [[book](http://php.net/manual/en/book.mbstring.php)]
-- mongodb [[book](http://php.net/manual/en/set.mongodb.php)]
-- mysqli [[book](http://php.net/manual/en/book.mysqli.php)]
-- opcache [[book](http://php.net/manual/en/book.opcache.php)]
-- pdo [[book](http://php.net/manual/en/book.pdo.php)]
-- pdo_mysql [[book](http://php.net/manual/en/ref.pdo-mysql.php)]
-- pdo_sqlite [[book](http://php.net/manual/en/ref.pdo-sqlite.php)]
-- phar [[book](http://php.net/manual/en/book.phar.php)]
-- posix [[book](http://php.net/manual/en/book.posix.php)]
-- readline [[book](http://php.net/manual/en/book.readline.php)]
-- redis
-- shmop [[book](http://php.net/manual/en/book.shmop.php)]
-- simplexml [[book](http://php.net/manual/en/book.simplexml.php)]
-- sockets [[book](http://php.net/manual/en/book.sockets.php)]
-- sqlite3 [[book](http://php.net/manual/en/book.sqlite3.php)]
-- tokenizer [[book](http://php.net/manual/en/book.tokenizer.php)]
-- wddx [[book](http://php.net/manual/en/book.wddx.php)]
-- xmlreader [[book](http://php.net/manual/en/book.xmlreader.php)]
-- xmlwriter [[book](http://php.net/manual/en/refs.xml.php)]
-- xsl [[book](http://php.net/manual/en/book.xsl.php)]
-- zip [[book](http://php.net/manual/en/book.zip.php)]
-- xdebug [[* disabled by default](#xdebug)]
+For PHP projects run through the command line interface (CLI), you can do the following.
 
-Composer is installed at `/usr/local/bin/composer`
+#### Create a Dockerfile in your PHP project
 
-PHP-CGI and PHP-CLI INI files, and PHP-FPM conf file are saved to standard location
-across all versions to make managing them all simpler.
+    FROM jtreminio/php:7.2
+    COPY . /usr/src/myapp
+    WORKDIR /usr/src/myapp
+    CMD [ "php", "./your-script.php" ]
+
+Then, run the commands to build and run the Docker image:
+
+    # docker build -t my-php-app .
+    # docker run -it --rm --name my-running-app my-php-app
+
+#### Run a single PHP script
+For many simple, single file projects, you may find it inconvenient  to write a complete `Dockerfile`. In such cases, you can run a PHP script by using the PHP Docker image directly:
+
+    # docker run -it --rm \
+        --name my-running-script \
+        -v "$PWD":/usr/src/myapp \
+        -w /usr/src/myapp \
+        jtreminio/php:7.2 php your-script.php
+
+Note that all variants of the PHP image contain the PHP CLI.
+
+### With Nginx
+
+As long as the PHP and Nginx containers are on the same Network, Nginx simply needs to use `fastcgi_pass php:9000;`.
+
+The following is an example for a Symfony 2 and Symfony 3 app:
+
+    server {
+        listen *:8080 default_server;
+    
+        server_name _;
+        root /var/www/public;
+    
+        autoindex off;
+    
+        location / {
+            try_files $uri /app.php$is_args$args;
+        }
+    
+        location ~ ^/(app_dev|config)\.php(/|$) {
+            set $path_info $fastcgi_path_info;
+    
+            fastcgi_pass php:9000;
+            fastcgi_split_path_info ^(.+\.php)(/.*)$;
+    
+            include fastcgi_params;
+    
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param DOCUMENT_ROOT $realpath_root;
+        }
+    
+        location ~ ^/app\.php(/|$) {
+            set $path_info $fastcgi_path_info;
+    
+            fastcgi_pass php:9000;
+            fastcgi_split_path_info ^(.+\.php)(/.*)$;
+    
+            include fastcgi_params;
+    
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param DOCUMENT_ROOT $realpath_root;
+    
+            internal;
+        }
+    
+        location ~ \.php$ {
+            return 404;
+        }
+    }
+
+
+## About these images
+
+These images are built from [Ondřej Surý's PPA](https://launchpad.net/~ondrej/+archive/ubuntu/php)
+
+They come with the most common PHP modules baked in. For a full list, please see the [official Github repo](https://github.com/jtreminio/php-docker).
+
+`Composer` is installed at `/usr/local/bin/composer`
+
+PHP-CGI and PHP-CLI INI files, and PHP-FPM conf file are saved to standard location across all versions to make managing them all simpler.
 
 - PHP INI used by PHP-FPM is at `/etc/php/fpm.ini`
 - PHP INI use by CLI is at `/etc/php/cli.ini`
 - PHP-FPM main conf is at `/etc/php/fpm.conf`
 
-PHP-FPM includes fix for logging to stdout and stderr created by
-https://github.com/phpdocker-io/base-images
+PHP-FPM includes fix for logging to stdout and stderr created by https://github.com/phpdocker-io/base-images
 
 PHP-FPM listens on port `9000` and is run by calling `/usr/bin/php-fpm`
 
