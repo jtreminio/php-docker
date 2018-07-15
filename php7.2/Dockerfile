@@ -19,15 +19,15 @@ RUN apt-get update &&\
 RUN apt-get update &&\
     apt-get -y install --no-install-recommends --no-install-suggests \
         git \
-        php${PHP_VER}- cli \
-        php${PHP_VER}- curl \
-        php${PHP_VER}- fpm \
-        php${PHP_VER}- intl \
-        php${PHP_VER}- json \
-        php${PHP_VER}- mbstring \
-        php${PHP_VER}- opcache \
-        php${PHP_VER}- xml \
-        php${PHP_VER}- zip &&\
+        php${PHP_VER}-cli \
+        php${PHP_VER}-curl \
+        php${PHP_VER}-fpm \
+        php${PHP_VER}-intl \
+        php${PHP_VER}-json \
+        php${PHP_VER}-mbstring \
+        php${PHP_VER}-opcache \
+        php${PHP_VER}-xml \
+        php${PHP_VER}-zip &&\
     apt-get -y --purge autoremove &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* &&\
     rm -rf /usr/share/{man,doc}
