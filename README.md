@@ -7,21 +7,43 @@ These images are built from
 
 The most common PHP modules are baked in:
 
+- calendar [[book](http://php.net/manual/en/book.calendar.php)]
 - cli
-- curl
-- fpm
-- imagick
-- intl
-- json
-- mbstring
-- mongodb
-- mysql
-- opcache
+- curl [[book](http://php.net/manual/en/book.curl.php)]
+- ctype [[book](http://php.net/manual/en/book.ctype.php)]
+- dom [[book](http://php.net/manual/en/book.dom.php)]
+- exif [[book](http://php.net/manual/en/book.exif.php)]
+- fileinfo [[book](http://php.net/manual/en/book.fileinfo.php)]
+- fpm [[book](http://php.net/manual/en/install.fpm.php)]
+- ftp [[book](http://php.net/manual/en/book.ftp.php)]
+- gettext [[book](http://php.net/manual/en/book.gettext.php)]
+- iconv [[book](http://php.net/manual/en/ref.iconv.php)]
+- igbinary
+- imagick [[book](http://php.net/manual/en/book.imagick.php)]
+- intl [[book](http://php.net/manual/en/book.intl.php)]
+- json [[book](http://php.net/manual/en/book.json.php)]
+- mbstring [[book](http://php.net/manual/en/book.mbstring.php)]
+- mongodb [[book](http://php.net/manual/en/set.mongodb.php)]
+- mysqli [[book](http://php.net/manual/en/book.mysqli.php)]
+- opcache [[book](http://php.net/manual/en/book.opcache.php)]
+- pdo [[book](http://php.net/manual/en/book.pdo.php)]
+- pdo_mysql [[book](http://php.net/manual/en/ref.pdo-mysql.php)]
+- pdo_sqlite [[book](http://php.net/manual/en/ref.pdo-sqlite.php)]
+- phar [[book](http://php.net/manual/en/book.phar.php)]
+- posix [[book](http://php.net/manual/en/book.posix.php)]
+- readline [[book](http://php.net/manual/en/book.readline.php)]
 - redis
-- sqlite3
-- xml
-- zip
-- [xdebug *](#xdebug)
+- shmop [[book](http://php.net/manual/en/book.shmop.php)]
+- simplexml [[book](http://php.net/manual/en/book.simplexml.php)]
+- sockets [[book](http://php.net/manual/en/book.sockets.php)]
+- sqlite3 [[book](http://php.net/manual/en/book.sqlite3.php)]
+- tokenizer [[book](http://php.net/manual/en/book.tokenizer.php)]
+- wddx [[book](http://php.net/manual/en/book.wddx.php)]
+- xmlreader [[book](http://php.net/manual/en/book.xmlreader.php)]
+- xmlwriter [[book](http://php.net/manual/en/refs.xml.php)]
+- xsl [[book](http://php.net/manual/en/book.xsl.php)]
+- zip [[book](http://php.net/manual/en/book.zip.php)]
+- xdebug [[* disabled by default](#xdebug)]
 
 Composer is installed at `/usr/local/bin/composer`
 
