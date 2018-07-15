@@ -117,12 +117,12 @@ With the default values set in the `Dockerfile` PHP then reads the above as:
 
 You can override any of the above values by using the `-e` flag:
 
-    $ docker container run -it --rm jtreminio/php:7.2 php -i | grep display_errors
+    # docker container run -it --rm jtreminio/php:7.2 php -i | grep display_errors
     100:display_errors => Off => Off
 
 vs
 
-    $ docker container run -it --rm \
+    # docker container run -it --rm \
         -e PHP_DISPLAY_ERRORS=1 \
         jtreminio/php:7.2 php -i | grep display_errors
     100:display_errors => STDOUT => STDOUT
