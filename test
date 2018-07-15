@@ -1,0 +1,135 @@
+#!/bin/bash
+set -o pipefail
+
+IMAGE=${1}
+FAIL='\033[0;31m[FAIL]\033[0m\n'
+PASS='\033[0;32m[PASS]\033[0m\n'
+
+if [[ -z "${IMAGE// }" ]]; then
+    cat << EOF
+Usage: test PHP_VERSION
+Run tests against jtreminio:{PHP_VERSION} Docker image
+Example: test 7.2
+EOF
+
+    exit 1
+fi
+
+printf "Testing jtreminio/php:${IMAGE}\n\n"
+
+printf "Check version correct"
+EXPECTS="PHP ${IMAGE}"
+CMD="docker container run -it --rm \
+  jtreminio/php:${IMAGE} php -v"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check custom INI loaded"
+EXPECTS="/etc/php/${IMAGE}/cli/conf.d/zzzz_custom.ini"
+CMD="docker container run -it --rm \
+  jtreminio/php:${IMAGE} php --ini"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check display_errors set to default value"
+EXPECTS="display_errors => Off => Off"
+CMD="docker container run -it --rm \
+  jtreminio/php:${IMAGE} php -i"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check display_errors accepts override value"
+EXPECTS="display_errors => STDOUT => STDOUT"
+CMD="docker container run -it --rm \
+  -e PHP_DISPLAY_ERRORS=1 \
+  jtreminio/php:${IMAGE} php -i"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check Xdebug not loaded by default"
+EXPECTS="with Xdebug"
+CMD="docker container run -it --rm \
+  jtreminio/php:${IMAGE} php -v"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 0 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check Xdebug loaded by env var"
+EXPECTS="with Xdebug"
+CMD="docker container run -it --rm \
+  -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+  jtreminio/php:${IMAGE} php -v"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check xdebug.remote_host set to default value"
+EXPECTS="xdebug.remote_host => host.docker.internal => host.docker.internal"
+CMD="docker container run -it --rm \
+  -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+  jtreminio/php:${IMAGE} php -i"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "Check xdebug.remote_host accepts override value"
+EXPECTS="xdebug.remote_host => 172.17.0.1 => 172.17.0.1"
+CMD="docker container run -it --rm \
+  -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+  -e XDEBUG_REMOTE_HOST=172.17.0.1 \
+  jtreminio/php:${IMAGE} php -i"
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+exit 0
