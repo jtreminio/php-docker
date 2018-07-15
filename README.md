@@ -28,3 +28,7 @@ PHP-FPM includes fix for logging to stdout and stderr created by
 https://github.com/phpdocker-io/base-images
 
 PHP-FPM listens on port `9000` and is run by calling `/usr/bin/php-fpm`
+
+## PHP 7.2
+
+On the Hub at https://hub.docker.com/r/jtreminio/php7.2
