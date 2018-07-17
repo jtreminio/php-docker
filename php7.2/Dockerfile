@@ -90,6 +90,8 @@ RUN rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
 # Xdebug is disabled by default, use `-e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug` to enable
 RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
           /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
+    touch /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini &&\
+    touch /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
     mv /etc/php/${PHP_VER}/mods-available/xdebug.ini /etc/php/conf-env/xdebug/xdebug.ini
 
 # Install Composer
