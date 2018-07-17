@@ -1,26 +1,38 @@
 #!/bin/bash
 set -o pipefail
 
-IMAGE=${1}
+PHP_VERSION=${1}
+IMAGE=${2:-jtreminio/php:${PHP_VERSION}}
 FAIL='\033[0;31m[FAIL]\033[0m\n'
 PASS='\033[0;32m[PASS]\033[0m\n'
 
-if [[ -z "${IMAGE// }" ]]; then
+if [[ -z "${PHP_VERSION// }" ]]; then
     cat << EOF
-Usage: test PHP_VERSION
-Run tests against jtreminio:{PHP_VERSION} Docker image
+Usage: test PHP_VERSION [IMAGE]
+Run tests against [IMAGE] Docker image
+
+When IMAGE is not passed, defaults to jtreminio:{PHP_VERSION}
+
 Example: test 7.2
+    Runs tests against jtreminio:7.2
+
+Example: test 7.2 jtreminio/php:7.2.test
+    Runs tests against jtreminio/php:7.2.test
 EOF
 
     exit 1
 fi
 
-printf "Testing jtreminio/php:${IMAGE}\n\n"
+
+printf "Testing ${IMAGE}\n\n"
 
 printf "Check version correct"
-EXPECTS="PHP ${IMAGE}"
-CMD="docker container run -it --rm \
-  jtreminio/php:${IMAGE} php -v"
+EXPECTS="PHP ${PHP_VERSION}"
+CMD=$(cat << EOF
+docker container run --rm \
+  ${IMAGE} bash -c "php -v"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
@@ -32,9 +44,12 @@ fi
 ###
 
 printf "Check custom INI loaded"
-EXPECTS="/etc/php/${IMAGE}/cli/conf.d/zzzz_custom.ini"
-CMD="docker container run -it --rm \
-  jtreminio/php:${IMAGE} php --ini"
+EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/98-env.ini"
+CMD=$(cat << EOF
+docker container run --rm \
+  ${IMAGE} bash -c "php --ini"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
@@ -47,8 +62,11 @@ fi
 
 printf "Check display_errors set to default value"
 EXPECTS="display_errors => Off => Off"
-CMD="docker container run -it --rm \
-  jtreminio/php:${IMAGE} php -i"
+CMD=$(cat << EOF
+docker container run --rm \
+  ${IMAGE} bash -c "php -i"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
@@ -61,9 +79,12 @@ fi
 
 printf "Check display_errors accepts override value"
 EXPECTS="display_errors => STDOUT => STDOUT"
-CMD="docker container run -it --rm \
+CMD=$(cat << EOF
+docker container run --rm \
   -e PHP_DISPLAY_ERRORS=1 \
-  jtreminio/php:${IMAGE} php -i"
+  ${IMAGE} bash -c "php -i"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
@@ -76,8 +97,11 @@ fi
 
 printf "Check Xdebug not loaded by default"
 EXPECTS="with Xdebug"
-CMD="docker container run -it --rm \
-  jtreminio/php:${IMAGE} php -v"
+CMD=$(cat << EOF
+docker container run --rm \
+  ${IMAGE} bash -c "php -v"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 0 ]; then
     printf " ${FAIL}"
@@ -90,9 +114,12 @@ fi
 
 printf "Check Xdebug loaded by env var"
 EXPECTS="with Xdebug"
-CMD="docker container run -it --rm \
-  -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
-  jtreminio/php:${IMAGE} php -v"
+CMD=$(cat << EOF
+docker container run --rm \
+  -e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug \
+  ${IMAGE} bash -c "php -v"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
@@ -105,9 +132,12 @@ fi
 
 printf "Check xdebug.remote_host set to default value"
 EXPECTS="xdebug.remote_host => host.docker.internal => host.docker.internal"
-CMD="docker container run -it --rm \
-  -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
-  jtreminio/php:${IMAGE} php -i"
+CMD=$(cat << EOF
+docker container run --rm \
+  -e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug \
+  ${IMAGE} bash -c "php -i"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
@@ -120,10 +150,13 @@ fi
 
 printf "Check xdebug.remote_host accepts override value"
 EXPECTS="xdebug.remote_host => 172.17.0.1 => 172.17.0.1"
-CMD="docker container run -it --rm \
-  -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+CMD=$(cat << EOF
+docker container run --rm \
+  -e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug \
   -e XDEBUG_REMOTE_HOST=172.17.0.1 \
-  jtreminio/php:${IMAGE} php -i"
+  ${IMAGE} bash -c "php -i"
+EOF
+)
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
