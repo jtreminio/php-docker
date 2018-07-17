@@ -66,30 +66,37 @@ RUN apt-get update &&\
            /usr/lib/php/20160303 \
            /usr/lib/php/${PHP_VER}
 
-# Xdebug is disabled by default, use `-e PHP_INI_SCAN_DIR=:/etc/php/xdebug` to enable
-RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
-          /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
-    mkdir /etc/php/xdebug &&\
-    mv /etc/php/${PHP_VER}/mods-available/xdebug.ini /etc/php/xdebug
-
-# Set up PID and sessions directory and install Composer
-RUN install -d -m 0755 -o www-data -g www-data /var/run/php-fpm &&\
-    install -d -m 0755 -o www-data -g www-data /var/lib/php/sessions &&\
-    install -d -m 0755 -o www-data -g www-data /.composer &&\
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin \
-        --filename=composer &&\
-    chown -R www-data:www-data /.composer
-
 # Save INI and FPM conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
 ADD --chown=www-data:www-data php.ini  /etc/php/cli.ini
-ADD --chown=www-data:www-data php.ini  /etc/php/fpm.ini
+ADD --chown=www-data:www-data php.ini  /etc/php/php.ini
 ADD --chown=www-data:www-data fpm.conf /etc/php/fpm.conf
 
-RUN ln -s /etc/php/cli.ini  /etc/php/${PHP_VER}/cli/conf.d/zzzz_custom.ini &&\
-    ln -s /etc/php/fpm.ini  /etc/php/${PHP_VER}/fpm/conf.d/zzzz_custom.ini &&\
-    rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
+# Set up PID and sessions directory and ENV-enabled INI files directory
+RUN install -d -m 0755 -o www-data -g www-data /var/run/php-fpm &&\
+    install -d -m 0755 -o www-data -g www-data /var/lib/php/sessions &&\
+    install -d -m 0755 -o www-data -g www-data /etc/php/conf-env &&\
+    install -d -m 0755 -o www-data -g www-data /etc/php/conf-env/xdebug
+
+# Inject our default INI and conf files.
+# To add your own files, add to the cli or fpm conf.d directories. All INI are
+# auto-loaded from this directory, and are loaded in alphabetical order. Suggested
+# to start with "99-" to ensure your settings are loaded last and take precedence.
+RUN rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
+    ln -s /etc/php/cli.ini  /etc/php/${PHP_VER}/cli/conf.d/98-env.ini &&\
+    ln -s /etc/php/php.ini  /etc/php/${PHP_VER}/fpm/conf.d/98-env.ini &&\
     ln -s /etc/php/fpm.conf /etc/php/${PHP_VER}/fpm/php-fpm.conf
+
+# Xdebug is disabled by default, use `-e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug` to enable
+RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
+          /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
+    mv /etc/php/${PHP_VER}/mods-available/xdebug.ini /etc/php/conf-env/xdebug/xdebug.ini
+
+# Install Composer
+RUN install -d -m 0755 -o www-data -g www-data /.composer &&\
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin \
+        --filename=composer &&\
+    chown -R www-data:www-data /.composer
 
 # Xdebug CLI debugging, only works if Xdebug is enabled
 RUN echo "#!/bin/bash" > /usr/bin/xdebug \
@@ -97,8 +104,11 @@ RUN echo "#!/bin/bash" > /usr/bin/xdebug \
 >> /usr/bin/xdebug \
     && chmod +x /usr/bin/xdebug
 
+# Only set PHP_INI_SCAN_DIR inside following file so it does not affect PHP CLI
 RUN echo "#!/bin/bash" > /usr/bin/php-fpm &&\
-    echo "/usr/sbin/php-fpm${PHP_VER} -F -R -O 2>&1 | sed -u 's,.*: \\\"\(.*\)$,\1,'| sed -u 's,\"$,,' 1>&1" \
+    echo "PHP_INI_SCAN_DIR=\${PHP_INI_SCAN_DIR:-/etc/php/${PHP_VER}/fpm/conf.d/}" \
+>> /usr/bin/php-fpm &&\
+    echo "/usr/sbin/php-fpm${PHP_VER} -c \${PHP_INI_SCAN_DIR} -F -R -O 2>&1 | sed -u 's,.*: \\\"\(.*\)$,\1,'| sed -u 's,\"$,,' 1>&1" \
 >> /usr/bin/php-fpm &&\
     chmod +x /usr/bin/php-fpm
 
