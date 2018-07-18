@@ -37,10 +37,12 @@ ENV XDEBUG_REMOTE_ENABLE            1
 ENV XDEBUG_REMOTE_HANDLER           "dbgp"
 ENV XDEBUG_REMOTE_PORT              9000
 
-# Most common PHP modules
+# Most common PHP modules, and Composer
 # Delete dupe module directories not required by this version (20160303)
 RUN apt-get update &&\
     apt-get -y install --no-install-recommends --no-install-suggests \
+        libfcgi0ldbl \
+        libfcgi-bin \
         git \
         php${PHP_VER}-cli \
         php${PHP_VER}-curl \
@@ -64,7 +66,11 @@ RUN apt-get update &&\
            /usr/lib/php/20131226 \
            /usr/lib/php/20151012 \
            /usr/lib/php/20170718 \
-           /usr/lib/php/${PHP_VER}
+           /usr/lib/php/${PHP_VER} &&\
+    install -d -m 0755 -o www-data -g www-data /.composer &&\
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin \
+        --filename=composer &&\
+    chown -R www-data:www-data /.composer
 
 # Save INI and FPM conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
@@ -98,12 +104,6 @@ RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
     touch /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini &&\
     touch /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
     mv /etc/php/${PHP_VER}/mods-available/xdebug.ini /etc/php/conf-env/xdebug/xdebug.ini
-
-# Install Composer
-RUN install -d -m 0755 -o www-data -g www-data /.composer &&\
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin \
-        --filename=composer &&\
-    chown -R www-data:www-data /.composer
 
 # Xdebug CLI debugging, only works if Xdebug is enabled
 RUN echo "#!/bin/bash" > /usr/bin/xdebug \
