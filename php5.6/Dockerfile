@@ -2,7 +2,6 @@ FROM blitznote/debase:18.04
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
-ENV COMPOSER_HOME /.composer
 
 COPY ondrej.pgp /root/ondrej.pgp
 
@@ -12,10 +11,22 @@ RUN cat /root/ondrej.pgp | apt-key add &&\
 >/etc/apt/sources.list.d/ondrej.list &&\
     rm -f /root/ondrej.pgp
 
+# install base requirements
+RUN apt-get update &&\
+    apt-get install --no-install-recommends --no-install-suggests -y \
+        libfcgi0ldbl \
+        libfcgi-bin \
+        git &&\
+    apt-get -y --purge autoremove &&\
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+           /usr/lib/x86_64-linux-gnu/perl /usr/share/perl \
+           /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc}
+
+ENV COMPOSER_HOME /.composer
 LABEL php-version="5.6.36"
 ENV PHP_VER 5.6
 
-# INI settings are set by env vars. Override any of the following with your own values
+# PHP INI settings are set by env vars
 ENV PHP_DISPLAY_ERRORS              "Off"
 ENV PHP_ERROR_REPORTING             0
 ENV DATE_TIMEZONE                   "UTC"
@@ -41,9 +52,6 @@ ENV XDEBUG_REMOTE_PORT              9000
 # Delete dupe module directories not required by this version (20131226)
 RUN apt-get update &&\
     apt-get -y install --no-install-recommends --no-install-suggests \
-        libfcgi0ldbl \
-        libfcgi-bin \
-        git \
         php${PHP_VER}-cli \
         php${PHP_VER}-curl \
         php${PHP_VER}-fpm \
@@ -105,11 +113,13 @@ RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
     touch /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
     mv /etc/php/${PHP_VER}/mods-available/xdebug.ini /etc/php/conf-env/xdebug/xdebug.ini
 
-# Xdebug CLI debugging, only works if Xdebug is enabled
-RUN echo "#!/bin/bash" > /usr/bin/xdebug \
-    && echo "XDEBUG_CONFIG=\"idekey=xdebug\" php -dxdebug.remote_enable=1 \"\$@\"" \
->> /usr/bin/xdebug \
-    && chmod +x /usr/bin/xdebug
+# Xdebug CLI debugging
+RUN echo "#!/bin/bash" > /usr/bin/xdebug &&\
+    echo "PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug \\" \
+>> /usr/bin/xdebug &&\
+    echo "XDEBUG_CONFIG=\"idekey=xdebug\" php -dxdebug.remote_enable=1 \"\$@\"" \
+>> /usr/bin/xdebug &&\
+    chmod +x /usr/bin/xdebug
 
 # Only set PHP_INI_SCAN_DIR inside following file so it does not affect PHP CLI
 RUN echo "#!/bin/bash" > /usr/bin/php-fpm &&\
