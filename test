@@ -3,6 +3,7 @@ set -o pipefail
 
 PHP_VERSION=${1}
 IMAGE=${2:-jtreminio/php:${PHP_VERSION}}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 FAIL='\033[0;31m[FAIL]\033[0m\n'
 PASS='\033[0;32m[PASS]\033[0m\n'
 
@@ -30,9 +31,18 @@ run_fpm_container() {
     fi
 
     docker container run -d --name jtreminio_test \
-        -v ${PWD}/files/index.php:/var/www/index.php \
+        -v ${DIR}/files/index.php:/var/www/index.php \
         ${ENVFLAG} \
-        ${IMAGE} > /dev/null 2>&1
+        ${IMAGE} /usr/bin/php-fpm > /dev/null 2>&1
+}
+
+exec_fpm_container() {
+cat << EOF
+docker container exec \
+    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
+        REQUEST_METHOD=GET \
+        cgi-fcgi -bind -connect 127.0.0.1:9000"
+EOF
 }
 
 rm_fpm_container() {
@@ -58,13 +68,7 @@ fi
 
 printf "[FPM] Check version correct"
 EXPECTS="PHP Version ${PHP_VERSION}"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -94,13 +98,7 @@ fi
 
 printf "[FPM] Check custom INI loaded"
 EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/98-env.ini"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -130,13 +128,7 @@ fi
 
 printf "[FPM] Check CLI INI not loaded"
 EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/98-env.ini"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -166,13 +158,7 @@ fi
 
 printf "[FPM] Check display_errors set to default value"
 EXPECTS="display_errors</td><td class=\"v\">Off"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -203,13 +189,7 @@ fi
 
 printf "[FPM] Check display_errors accepts override value"
 EXPECTS="display_errors</td><td class=\"v\">On"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container "PHP_DISPLAY_ERRORS=1"
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -239,13 +219,7 @@ fi
 
 printf "[FPM] Check Xdebug not loaded by default"
 EXPECTS="with Xdebug"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -276,13 +250,7 @@ fi
 
 printf "[FPM] Check Xdebug loaded by env var"
 EXPECTS="with&nbsp;Xdebug"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container "PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug"
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -315,13 +283,7 @@ fi
 
 printf "[FPM] Check xdebug.remote_host set to default value"
 EXPECTS="xdebug.remote_host</td><td class=\"v\">host.docker.internal"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container "PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug"
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
@@ -355,16 +317,27 @@ fi
 
 printf "[FPM] Check xdebug.remote_host accepts overriden value"
 EXPECTS="xdebug.remote_host</td><td class=\"v\">custom.localhost"
-CMD=$(cat << EOF
-docker container exec \
-    jtreminio_test bash -c "SCRIPT_FILENAME=/var/www/index.php \
-        REQUEST_METHOD=GET \
-        cgi-fcgi -bind -connect 127.0.0.1:9000"
-EOF
-)
+CMD=$(exec_fpm_container)
 run_fpm_container "PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug -e XDEBUG_REMOTE_HOST=custom.localhost"
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 rm_fpm_container
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "[CLI] Check Xdebug CLI auto-sets PHP_INI_SCAN_DIR"
+EXPECTS="/etc/php/conf-env/xdebug/xdebug.ini"
+CMD=$(cat << EOF
+docker container run --rm \
+  ${IMAGE} bash -c "/usr/bin/xdebug --ini"
+EOF
+)
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
 if [ ${RESULT} -ne 1 ]; then
     printf " ${FAIL}"
     exit 1
