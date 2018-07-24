@@ -140,7 +140,7 @@ With the default values set in the `Dockerfile` PHP then reads the above as:
     display_errors = "Off"
     error_reporting = 0
     date.timezone = "UTC"
-    opcache.enable = ${OPCACHE_ENABLE}
+    opcache.enable = 1
     opcache.enable_cli = 1
     opcache.fast_shutdown = 1
     opcache.interned_strings_buffer = 1
