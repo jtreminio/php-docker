@@ -82,9 +82,11 @@ RUN apt-get update &&\
 
 # Save INI and FPM conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
-ADD --chown=www-data:www-data php.ini  /etc/php/cli.ini
-ADD --chown=www-data:www-data php.ini  /etc/php/php.ini
-ADD --chown=www-data:www-data fpm.conf /etc/php/fpm.conf
+ADD --chown=www-data:www-data php.ini   /etc/php/cli.ini
+ADD --chown=www-data:www-data php.ini   /etc/php/php.ini
+ADD --chown=www-data:www-data fpm.conf  /etc/php/fpm.conf
+ADD --chown=www-data:www-data blank.ini /etc/php/cli-custom.ini
+ADD --chown=www-data:www-data blank.ini /etc/php/php-custom.ini
 
 # Remove extra directories that may be created by installing modules above
 RUN rm -rf /etc/php/7.0 \
@@ -102,9 +104,11 @@ RUN install -d -m 0755 -o www-data -g www-data /var/run/php-fpm &&\
 # auto-loaded from this directory, and are loaded in alphabetical order. Suggested
 # to start with "99-" to ensure your settings are loaded last and take precedence.
 RUN rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
-    ln -s /etc/php/cli.ini  /etc/php/${PHP_VER}/cli/conf.d/98-env.ini &&\
-    ln -s /etc/php/php.ini  /etc/php/${PHP_VER}/fpm/conf.d/98-env.ini &&\
-    ln -s /etc/php/fpm.conf /etc/php/${PHP_VER}/fpm/php-fpm.conf
+    ln -s /etc/php/cli.ini        /etc/php/${PHP_VER}/cli/conf.d/98-env.ini &&\
+    ln -s /etc/php/php.ini        /etc/php/${PHP_VER}/fpm/conf.d/98-env.ini &&\
+    ln -s /etc/php/fpm.conf       /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
+    ln -s /etc/php/cli-custom.ini /etc/php/${PHP_VER}/cli/conf.d/99-custom.ini &&\
+    ln -s /etc/php/php-custom.ini /etc/php/${PHP_VER}/fpm/conf.d/99-custom.ini
 
 # Xdebug is disabled by default, use `-e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug` to enable
 RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \

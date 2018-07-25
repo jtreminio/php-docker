@@ -345,4 +345,36 @@ else
     printf " ${PASS}"
 fi
 
+###
+
+printf "[CLI] Check custom INI loaded"
+EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini"
+CMD=$(cat << EOF
+docker container run --rm \
+  ${IMAGE} bash -c "php --ini"
+EOF
+)
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
+###
+
+printf "[FPM] Check custom INI loaded"
+EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini"
+CMD=$(exec_fpm_container)
+run_fpm_container
+RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
+rm_fpm_container
+if [ ${RESULT} -ne 1 ]; then
+    printf " ${FAIL}"
+    exit 1
+else
+    printf " ${PASS}"
+fi
+
 exit 0
