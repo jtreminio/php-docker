@@ -98,6 +98,13 @@ PHP-CGI and PHP-CLI INI files, and PHP-FPM conf file are saved to standard locat
 - PHP INI use by CLI is at `/etc/php/cli.ini`
 - PHP-FPM main conf is at `/etc/php/fpm.conf`
 
+Two blank INI files have been provided for you to write your custom INI settings.
+
+- /etc/php/cli-custom.ini
+- /etc/php/php-custom.ini
+
+Use `-v your-file.ini:/etc/php/cli-custom.ini` to add your settings. These two files are loaded last so its contents will take precedence over everything else.
+
 PHP-FPM includes fix for logging to stdout and stderr created by https://github.com/phpdocker-io/base-images
 
 PHP-FPM listens on port `9000` and is run by calling `/usr/bin/php-fpm`
