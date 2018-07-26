@@ -23,7 +23,7 @@ RUN apt-get update &&\
            /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc}
 
 ENV COMPOSER_HOME /.composer
-LABEL php-version="7.2.7"
+LABEL php-version="7.2.8"
 ENV PHP_VER 7.2
 
 # PHP INI settings are set by env vars
