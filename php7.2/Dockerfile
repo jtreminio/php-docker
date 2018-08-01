@@ -91,7 +91,8 @@ ADD --chown=www-data:www-data blank.ini /etc/php/php-custom.ini
 # Remove extra directories that may be created by installing modules above
 RUN rm -rf /etc/php/5.6 \
            /etc/php/7.0 \
-           /etc/php/7.1
+           /etc/php/7.1 \
+           /etc/php/7.3
 
 # Set up PID and sessions directory and ENV-enabled INI files directory
 RUN install -d -m 0755 -o www-data -g www-data /var/run/php-fpm &&\

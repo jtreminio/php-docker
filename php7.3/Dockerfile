@@ -23,8 +23,8 @@ RUN apt-get update &&\
            /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc}
 
 ENV COMPOSER_HOME /.composer
-LABEL php-version="7.0.31"
-ENV PHP_VER 7.0
+LABEL php-version="7.3.0-alpha4"
+ENV PHP_VER 7.3
 
 # PHP INI settings are set by env vars
 ENV PHP_DISPLAY_ERRORS              "Off"
@@ -40,40 +40,30 @@ ENV OPCACHE_MEMORY_CONSUMPTION      256
 ENV OPCACHE_REVALIDATE_FREQ         0
 ENV OPCACHE_VALIDATE_TIMESTAMPS     1
 
-ENV XDEBUG_REMOTE_HOST              "host.docker.internal"
-ENV XDEBUG_DEFAULT_ENABLE           1
-ENV XDEBUG_REMOTE_AUTOSTART         1
-ENV XDEBUG_REMOTE_CONNECT_BACK      0
-ENV XDEBUG_REMOTE_ENABLE            1
-ENV XDEBUG_REMOTE_HANDLER           "dbgp"
-ENV XDEBUG_REMOTE_PORT              9000
-
 # Most common PHP modules, and Composer
-# Delete dupe module directories not required by this version (20170718)
+# Delete dupe module directories not required by this version (20180606)
 RUN apt-get update &&\
     apt-get -y install --no-install-recommends --no-install-suggests \
         php${PHP_VER}-cli \
         php${PHP_VER}-curl \
         php${PHP_VER}-fpm \
-        php${PHP_VER}-imagick \
         php${PHP_VER}-intl \
         php${PHP_VER}-json \
         php${PHP_VER}-mbstring \
-        php${PHP_VER}-mongodb \
         php${PHP_VER}-mysql \
         php${PHP_VER}-opcache \
-        php${PHP_VER}-redis \
         php${PHP_VER}-sqlite3 \
         php${PHP_VER}-xml \
-        php${PHP_VER}-zip \
-        php-xdebug &&\
+        php${PHP_VER}-zip &&\
     apt-get -y --purge autoremove &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
            /usr/lib/x86_64-linux-gnu/perl /usr/share/perl \
            /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc} \
            /usr/lib/php/20131226 \
+           /usr/lib/php/20151012 \
            /usr/lib/php/20160303 \
            /usr/lib/php/20170718 \
+           /usr/lib/php/7.2 \
            /usr/lib/php/${PHP_VER} &&\
     install -d -m 0755 -o www-data -g www-data /.composer &&\
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin \
@@ -90,15 +80,14 @@ ADD --chown=www-data:www-data blank.ini /etc/php/php-custom.ini
 
 # Remove extra directories that may be created by installing modules above
 RUN rm -rf /etc/php/5.6 \
+           /etc/php/7.0 \
            /etc/php/7.1 \
-           /etc/php/7.2 \
-           /etc/php/7.3
+           /etc/php/7.2
 
 # Set up PID and sessions directory and ENV-enabled INI files directory
 RUN install -d -m 0755 -o www-data -g www-data /var/run/php-fpm &&\
     install -d -m 0755 -o www-data -g www-data /var/lib/php/sessions &&\
-    install -d -m 0755 -o www-data -g www-data /etc/php/conf-env &&\
-    install -d -m 0755 -o www-data -g www-data /etc/php/conf-env/xdebug
+    install -d -m 0755 -o www-data -g www-data /etc/php/conf-env
 
 # Inject our default INI and conf files.
 # To add your own files, add to the cli or fpm conf.d directories. All INI are
@@ -111,26 +100,9 @@ RUN rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
     ln -s /etc/php/cli-custom.ini /etc/php/${PHP_VER}/cli/conf.d/99-custom.ini &&\
     ln -s /etc/php/php-custom.ini /etc/php/${PHP_VER}/fpm/conf.d/99-custom.ini
 
-# Xdebug is disabled by default, use `-e PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug` to enable
-RUN rm -f /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
-          /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
-    touch /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini &&\
-    touch /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
-    mv /etc/php/${PHP_VER}/mods-available/xdebug.ini /etc/php/conf-env/xdebug/xdebug.ini
-
-# Xdebug CLI debugging
-RUN echo "#!/bin/bash" > /usr/bin/xdebug &&\
-    echo "PHP_INI_SCAN_DIR=:/etc/php/conf-env/xdebug \\" \
->> /usr/bin/xdebug &&\
-    echo "XDEBUG_CONFIG=\"idekey=xdebug\" php -dxdebug.remote_enable=1 \"\$@\"" \
->> /usr/bin/xdebug &&\
-    chmod +x /usr/bin/xdebug
-
 # Only set PHP_INI_SCAN_DIR inside following file so it does not affect PHP CLI
 RUN echo "#!/bin/bash" > /usr/bin/php-fpm &&\
-    echo "PHP_INI_SCAN_DIR=\${PHP_INI_SCAN_DIR:-/etc/php/${PHP_VER}/fpm/conf.d/}" \
->> /usr/bin/php-fpm &&\
-    echo "/usr/sbin/php-fpm${PHP_VER} -c \${PHP_INI_SCAN_DIR} -F -R -O 2>&1 | sed -u 's,.*: \\\"\(.*\)$,\1,'| sed -u 's,\"$,,' 1>&1" \
+    echo "/usr/sbin/php-fpm${PHP_VER} -F -R -O 2>&1 | sed -u 's,.*: \\\"\(.*\)$,\1,'| sed -u 's,\"$,,' 1>&1" \
 >> /usr/bin/php-fpm &&\
     chmod +x /usr/bin/php-fpm
 
