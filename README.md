@@ -1,10 +1,12 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `7.3.0-alpha4`, `7.3`, ([php7.3/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.3/Dockerfile))
-* `7.2.8`, `7.2`, `latest` ([php7.2/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.2/Dockerfile))
-* `7.1.20`, `7.1` ([php7.1/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.1/Dockerfile))
-* `7.0.31`, `7.0` ([php7.0/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.0/Dockerfile))
-* `5.6.37`, `5.6` ([php5.6/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php5.6/Dockerfile))
+* `7.3`, ([php7.3/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.3/Dockerfile))
+* `7.2`, `latest` ([php7.2/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.2/Dockerfile))
+* `7.1` ([php7.1/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.1/Dockerfile))
+* `7.0` ([php7.0/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.0/Dockerfile))
+* `5.6` ([php5.6/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php5.6/Dockerfile))
+
+[All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php/tags/)
 
 ## How to use this image
 
