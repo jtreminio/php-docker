@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
+XDEBUG_CONFIG="idekey=xdebug" php -dxdebug.remote_enable=1 "$@"

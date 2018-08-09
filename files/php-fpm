@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-/etc/php/fpm-conf.d/}
+
+/usr/sbin/php-fpm \
+    -c ${PHP_INI_SCAN_DIR} \
+    --nodaemonize \
+    --allow-to-run-as-root \
+    --force-stderr 2>&1 | \
+sed -u 's,.*: \"\(.*\)$,\1,'| \
+sed -u 's,"$,,' 1>&1

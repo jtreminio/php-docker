@@ -11,7 +11,8 @@ docker image build \
   -t jtreminio/php:7.2 \
   -t jtreminio/php:7.2.8 \
   -t jtreminio/php:latest \
-  php7.2
+  -f Dockerfile-7.2 \
+  .
 
 docker image build \
   -t jtreminio/php:7.1 \

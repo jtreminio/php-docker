@@ -163,7 +163,7 @@ With the default values set in the `Dockerfile` PHP then reads the above as:
     xdebug.remote_host = "host.docker.internal"
     xdebug.default_enable = 1
     xdebug.remote_autostart = 1
-    xdebug.remote_connect_back = 0
+    xdebug.remote_connect_back = 1
     xdebug.remote_enable = 1
     xdebug.remote_handler = "dbgp"
     xdebug.remote_port = 9000
@@ -193,7 +193,7 @@ Xdebug is _installed_ but _disabled_ by default:
 To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env var:
 
     # docker container run -it --rm \
-        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
         jtreminio/php:latest php -v
     PHP 7.2.7-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jun 22 2018 08:45:49) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
@@ -201,13 +201,13 @@ To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env 
         with Zend OPcache v7.2.7-1+ubuntu18.04.1+deb.sury.org+1, Copyright (c) 1999-2018, by Zend Technologies
         with Xdebug v2.6.0, Copyright (c) 2002-2018, by Derick Rethans
 
-Note the prepended `:` in `:/etc/php/xdebug`.
+Note the prepended `:` in `:/etc/php/xdebug-conf.d`.
 
 `xdebug.remote_host` is set to `host.docker.internal` by default. [This will not work in Linux (yet)](https://github.com/docker/for-linux/issues/264).
 You must either pass your host IP directly, or use a gateway. I have found `172.17.0.1` to work in most cases:
 
     # docker container run -it --rm \
-        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
         -e XDEBUG_REMOTE_HOST=172.17.0.1 \
         jtreminio/php:latest php -i | grep xdebug.remote_host
     860:xdebug.remote_host => 127.0.0.1 => 127.0.0.1
@@ -217,5 +217,5 @@ A helper script has been created at `/usr/bin/xdebug` to help you debug CLI appl
 To use it, call it instead of `php` directly:
 
     # docker container run -it --rm \
-        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug \
+        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
         jtreminio/php:latest xdebug /path/to/file.php
