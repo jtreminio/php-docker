@@ -8,6 +8,8 @@
 
 [All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php/tags/)
 
+#### [This README best viewed on Github for formatting](https://github.com/jtreminio/php-docker/blob/master/README.md)
+
 ## How to use this image
 
 ### With Command Line
