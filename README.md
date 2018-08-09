@@ -1,10 +1,10 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `7.3`, ([php7.3/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.3/Dockerfile))
-* `7.2`, `latest` ([php7.2/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.2/Dockerfile))
-* `7.1` ([php7.1/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.1/Dockerfile))
-* `7.0` ([php7.0/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php7.0/Dockerfile))
-* `5.6` ([php5.6/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/php5.6/Dockerfile))
+* `7.3`, ([php7.3/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3))
+* `7.2`, `latest` ([php7.2/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2))
+* `7.1` ([php7.1/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1))
+* `7.0` ([php7.0/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0))
+* `5.6` ([php5.6/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6))
 
 [All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php/tags/)
 
@@ -121,7 +121,7 @@ Only a small subset of values work right now. Any more will require a PR.
 The INI file in the container looks like this:
 
     [custom]
-    session.save_path = "/var/lib/php/sessions"
+    session.save_path = "${SESSION_SAVE_PATH}"
     display_errors = "${PHP_DISPLAY_ERRORS}"
     error_reporting = ${PHP_ERROR_REPORTING}
     date.timezone = "${DATE_TIMEZONE}"
@@ -218,4 +218,9 @@ To use it, call it instead of `php` directly:
 
     # docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
-        jtreminio/php:latest xdebug /path/to/file.php
+        jtreminio/php:latest xdebug -v
+    PHP 7.2.8-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jul 25 2018 10:52:19) ( NTS )
+    Copyright (c) 1997-2018 The PHP Group
+    Zend Engine v3.2.0, Copyright (c) 1998-2018 Zend Technologies
+        with Zend OPcache v7.2.8-1+ubuntu18.04.1+deb.sury.org+1, Copyright (c) 1999-2018, by Zend Technologies
+        with Xdebug v2.6.0, Copyright (c) 2002-2018, by Derick Rethans
