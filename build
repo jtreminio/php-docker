@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -o pipefail
 
 docker image build \
   -t jtreminio/php:7.3 \
-  -t jtreminio/php:7.3.0-alpha4 \
-  php7.3
+  -t jtreminio/php:7.3.0-beta1 \
+  -f Dockerfile-7.3 \
+  .
 
 docker image build \
   -t jtreminio/php:7.2 \
@@ -17,14 +18,17 @@ docker image build \
 docker image build \
   -t jtreminio/php:7.1 \
   -t jtreminio/php:7.1.20 \
-  php7.1
+  -f Dockerfile-7.1 \
+  .
 
 docker image build \
   -t jtreminio/php:7.0 \
   -t jtreminio/php:7.0.31 \
-  php7.0
+  -f Dockerfile-7.0 \
+  .
 
 docker image build \
   -t jtreminio/php:5.6 \
   -t jtreminio/php:5.6.37 \
-  php5.6
+  -f Dockerfile-5.6 \
+  .
