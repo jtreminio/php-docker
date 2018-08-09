@@ -203,6 +203,10 @@ To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env 
 
 Note the prepended `:` in `:/etc/php/xdebug-conf.d`.
 
+`xdebug.remote_connect_back` is enabled so Xdebug will attempt to connect back to whatever host initiates the connection.
+
+If you wish to disable it and use `xdebug.remote_host`:
+
 `xdebug.remote_host` is set to `host.docker.internal` by default. [This will not work in Linux (yet)](https://github.com/docker/for-linux/issues/264).
 You must either pass your host IP directly, or use a gateway. I have found `172.17.0.1` to work in most cases:
 
