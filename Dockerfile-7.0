@@ -23,7 +23,7 @@ RUN apt-get update &&\
            /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc}
 
 ENV COMPOSER_HOME /.composer
-LABEL php-version="7.0.31"
+LABEL php-version="7.0.32"
 ENV PHP_VER 7.0
 ENV PHP_LIB_DIR 20151012
 
@@ -64,6 +64,7 @@ ENV XDEBUG_REMOTE_PORT              9000
 # Most common PHP modules, and Composer
 RUN apt-get update &&\
     apt-get -y install --no-install-recommends --no-install-suggests \
+        php${PHP_VER}-bcmath \
         php${PHP_VER}-cli \
         php${PHP_VER}-curl \
         php${PHP_VER}-fpm \

@@ -2,7 +2,7 @@
 set -e
 set -o pipefail
 
-PHP73="7.3.0-beta1"
+PHP73="7.3.0-rc2"
 docker image build \
   -t jtreminio/php:7.3 \
   -t jtreminio/php:${PHP73} \
@@ -15,7 +15,7 @@ docker image push jtreminio/php:7.3
 docker image push jtreminio/php:${PHP73}
 EOF
 
-PHP72="7.2.8"
+PHP72="7.2.10"
 docker image build \
   -t jtreminio/php:7.2 \
   -t jtreminio/php:${PHP72} \
@@ -30,7 +30,7 @@ docker image push jtreminio/php:${PHP72}
 docker image push jtreminio/php:latest
 EOF
 
-PHP71="7.1.20"
+PHP71="7.1.22"
 docker image build \
   -t jtreminio/php:7.1 \
   -t jtreminio/php:${PHP71} \
@@ -43,7 +43,7 @@ docker image push jtreminio/php:7.1
 docker image push jtreminio/php:${PHP71}
 EOF
 
-PHP70="7.0.31"
+PHP70="7.0.32"
 docker image build \
   -t jtreminio/php:7.0 \
   -t jtreminio/php:${PHP70} \
@@ -56,7 +56,7 @@ docker image push jtreminio/php:7.0
 docker image push jtreminio/php:${PHP70}
 EOF
 
-PHP56="5.6.37"
+PHP56="5.6.38"
 docker image build \
   -t jtreminio/php:5.6 \
   -t jtreminio/php:${PHP56} \
