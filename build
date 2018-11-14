@@ -2,6 +2,16 @@
 set -e
 set -o pipefail
 
+docker image build \
+    -t jtreminio/phpenv:latest \
+    -f Dockerfile-env \
+    .
+cat << EOF
+Push to Docker Hub with:
+
+docker image push jtreminio/phpenv:latest
+EOF
+
 PHP73="7.3.0-rc2"
 docker image build \
   -t jtreminio/php:7.3 \
@@ -15,8 +25,9 @@ docker image push jtreminio/php:7.3
 docker image push jtreminio/php:${PHP73}
 EOF
 
-PHP72="7.2.10"
+PHP72="7.2.12"
 docker image build \
+  --build-arg PHP_VER_DOT=${PHP72} \
   -t jtreminio/php:7.2 \
   -t jtreminio/php:${PHP72} \
   -t jtreminio/php:latest \
