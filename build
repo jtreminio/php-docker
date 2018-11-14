@@ -71,6 +71,7 @@ EOF
 
 PHP56="5.6.38"
 docker image build \
+  --build-arg PHP_VER_DOT=${PHP56} \
   -t jtreminio/php:5.6 \
   -t jtreminio/php:${PHP56} \
   -f Dockerfile-5.6 \
