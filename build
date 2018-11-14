@@ -57,6 +57,7 @@ EOF
 
 PHP70="7.0.32"
 docker image build \
+  --build-arg PHP_VER_DOT=${PHP70} \
   -t jtreminio/php:7.0 \
   -t jtreminio/php:${PHP70} \
   -f Dockerfile-7.0 \
