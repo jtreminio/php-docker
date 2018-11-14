@@ -1,6 +1,7 @@
 FROM jtreminio/phpenv:latest
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
+ENV DEBIAN_FRONTEND noninteractive
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 
 COPY files/ondrej.pgp /root/ondrej.pgp
@@ -8,10 +9,15 @@ COPY files/ondrej.pgp /root/ondrej.pgp
 # install base requirements
 RUN apt-get update &&\
     apt-get install --no-install-recommends --no-install-suggests -y \
+        ca-certificates\
+        curl \
+        git \
         gnupg \
         libfcgi0ldbl \
         libfcgi-bin \
-        git &&\
+        unzip \
+        zip \
+        &&\
     cat /root/ondrej.pgp | apt-key add &&\
         printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/php/ubuntu bionic main\n" \
 >/etc/apt/sources.list.d/ondrej.list &&\
