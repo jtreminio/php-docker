@@ -41,8 +41,9 @@ docker image push jtreminio/php:${PHP72}
 docker image push jtreminio/php:latest
 EOF
 
-PHP71="7.1.22"
+PHP71="7.1.24"
 docker image build \
+  --build-arg PHP_VER_DOT=${PHP71} \
   -t jtreminio/php:7.1 \
   -t jtreminio/php:${PHP71} \
   -f Dockerfile-7.1 \

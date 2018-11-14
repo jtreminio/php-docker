@@ -1,30 +1,36 @@
-FROM blitznote/debase:18.04
+FROM jtreminio/phpenv:latest
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
+ENV DEBIAN_FRONTEND noninteractive
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 
 COPY files/ondrej.pgp /root/ondrej.pgp
 
-# Add Ondrej PPA; This repo is used for several PHP versions
-RUN cat /root/ondrej.pgp | apt-key add &&\
-    printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/php/ubuntu bionic main\n" \
->/etc/apt/sources.list.d/ondrej.list &&\
-    rm -f /root/ondrej.pgp
-
 # install base requirements
 RUN apt-get update &&\
     apt-get install --no-install-recommends --no-install-suggests -y \
+        ca-certificates\
+        curl \
+        git \
+        gnupg \
         libfcgi0ldbl \
         libfcgi-bin \
-        git &&\
+        unzip \
+        zip \
+        &&\
+    cat /root/ondrej.pgp | apt-key add &&\
+        printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/php/ubuntu bionic main\n" \
+>/etc/apt/sources.list.d/ondrej.list &&\
+    rm -f /root/ondrej.pgp &&\
+    apt-get update &&\
     apt-get -y --purge autoremove &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
            /usr/lib/x86_64-linux-gnu/perl /usr/share/perl \
            /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc}
 
 ENV COMPOSER_HOME /.composer
-LABEL php-version="7.1.22"
 ENV PHP_VER 7.1
+ARG PHP_VER_DOT
 ENV PHP_LIB_DIR 20160303
 
 # Deletable dupe module directories not required by this version
@@ -38,47 +44,43 @@ ENV DEL_PHP_DIR /etc/php/5.6 \
                 /etc/php/7.2 \
                 /etc/php/7.3
 
-# PHP INI settings are set by env vars
-ENV PHP_DISPLAY_ERRORS              "Off"
-ENV PHP_ERROR_REPORTING             0
-ENV DATE_TIMEZONE                   "UTC"
-ENV SESSION_SAVE_PATH               "/var/lib/php/sessions"
-
-ENV OPCACHE_ENABLE                  1
-ENV OPCACHE_ENABLE_CLI              1
-ENV OPCACHE_FAST_SHUTDOWN           1
-ENV OPCACHE_INTERNED_STRINGS_BUFFER 16
-ENV OPCACHE_MAX_ACCELERATED_FILES   40000
-ENV OPCACHE_MEMORY_CONSUMPTION      256
-ENV OPCACHE_REVALIDATE_FREQ         0
-ENV OPCACHE_VALIDATE_TIMESTAMPS     1
-
-ENV XDEBUG_REMOTE_HOST              "host.docker.internal"
-ENV XDEBUG_DEFAULT_ENABLE           1
-ENV XDEBUG_REMOTE_AUTOSTART         1
-ENV XDEBUG_REMOTE_CONNECT_BACK      1
-ENV XDEBUG_REMOTE_ENABLE            1
-ENV XDEBUG_REMOTE_HANDLER           "dbgp"
-ENV XDEBUG_REMOTE_PORT              9000
-
 # Most common PHP modules, and Composer
 RUN apt-get update &&\
     apt-get -y install --no-install-recommends --no-install-suggests \
+        php${PHP_VER}-amqp \
+        php${PHP_VER}-apcu \
         php${PHP_VER}-bcmath \
         php${PHP_VER}-cli \
         php${PHP_VER}-curl \
         php${PHP_VER}-fpm \
+        php${PHP_VER}-geoip \
+        php${PHP_VER}-gnupg \
+        php${PHP_VER}-igbinary \
         php${PHP_VER}-imagick \
         php${PHP_VER}-intl \
         php${PHP_VER}-json \
+        php${PHP_VER}-lua \
+        php${PHP_VER}-mailparse \
         php${PHP_VER}-mbstring \
+        php${PHP_VER}-memcached \
         php${PHP_VER}-mongodb \
         php${PHP_VER}-mysql \
+        php${PHP_VER}-oauth \
         php${PHP_VER}-opcache \
+        php${PHP_VER}-radius \
+        php${PHP_VER}-raphf \
         php${PHP_VER}-redis \
+        php${PHP_VER}-sodium \
+        php${PHP_VER}-solr \
         php${PHP_VER}-sqlite3 \
+        php${PHP_VER}-ssh2 \
+        php${PHP_VER}-stomp \
+        php${PHP_VER}-uploadprogress \
+        php${PHP_VER}-uuid \
         php${PHP_VER}-xml \
         php${PHP_VER}-zip \
+        php${PHP_VER}-zmq \
+        php-pear \
         php-xdebug &&\
     apt-get -y --purge autoremove &&\
     rm -rf /tmp/* \
@@ -102,7 +104,6 @@ RUN install -d -m 0755 -o www-data -g www-data /.composer &&\
 
 # Save INI and FPM conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
-ADD --chown=www-data:www-data files/php.ini  /etc/php/cli.ini
 ADD --chown=www-data:www-data files/php.ini  /etc/php/php.ini
 ADD --chown=www-data:www-data files/fpm.conf /etc/php/fpm.conf
 
@@ -112,7 +113,7 @@ ADD --chown=www-data:www-data files/blank.ini /etc/php/php-custom.ini
 
 # Set up PID and sessions directories
 RUN install -d -m 0755 -o www-data -g www-data /var/run/php-fpm &&\
-    install -d -m 0755 -o www-data -g www-data ${SESSION_SAVE_PATH}
+    install -d -m 0755 -o www-data -g www-data /var/lib/php/sessions
 
 # Inject our default INI and conf files.
 # To add your own files, add to the cli or fpm conf.d directories. All INI are
@@ -122,7 +123,7 @@ RUN rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
     ln -s /etc/php/${PHP_VER}/fpm/conf.d /etc/php/fpm-conf.d &&\
     ln -s /etc/php/${PHP_VER}/cli/conf.d /etc/php/cli-conf.d &&\
     \
-    ln -s /etc/php/cli.ini        /etc/php/${PHP_VER}/cli/conf.d/98-env.ini &&\
+    ln -s /etc/php/php.ini        /etc/php/${PHP_VER}/cli/conf.d/98-env.ini &&\
     ln -s /etc/php/php.ini        /etc/php/${PHP_VER}/fpm/conf.d/98-env.ini &&\
     ln -s /etc/php/fpm.conf       /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
     ln -s /etc/php/cli-custom.ini /etc/php/${PHP_VER}/cli/conf.d/99-custom.ini &&\
