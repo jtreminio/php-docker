@@ -659,3 +659,15 @@ ENV PHP.allow_url_fopen=1 \
     PHP.zlib.output_compression= \
     PHP.zlib.output_compression_level=-1 \
     PHP.zlib.output_handler= \
+    \
+    FPM.access.format="%R - %u %t \"%m %r\" %s" \
+    FPM.listen.backlog=511 \
+    FPM.listen.mode=0660 \
+    FPM.pm=dynamic \
+    FPM.pm.max_children=5 \
+    FPM.pm.start_servers=2 \
+    FPM.pm.min_spare_servers=1 \
+    FPM.pm.max_spare_servers=3 \
+    FPM.pm.process_idle_timeout=10s \
+    FPM.pm.max_requests=0 \
+    FPM.security.limit_extensions=.php \

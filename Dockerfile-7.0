@@ -154,5 +154,3 @@ RUN chmod +x /usr/bin/php-fpm &&\
 WORKDIR /etc/php/${PHP_VER}
 
 EXPOSE 9000
-
-CMD /usr/bin/php-fpm
