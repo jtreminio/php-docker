@@ -577,6 +577,23 @@ ENV PHP.allow_url_fopen=1 \
     PHP.vld.skip_append= \
     PHP.vld.skip_prepend= \
     \
+    PHP.xmms.path= \
+    PHP.xmms.session= \
+    \
+    PHP.yami.response.timeout= \
+    \
+    PHP.yaz.keepalive= \
+    PHP.yaz.log_mask= \
+    \
+    PHP.zend.enable_gc=1 \
+    PHP.zend.multibyte=0 \
+    PHP.zend.script_encoding= \
+    PHP.zend.signal_check=0 \
+    \
+    PHP.zlib.output_compression= \
+    PHP.zlib.output_compression_level=-1 \
+    PHP.zlib.output_handler= \
+    \
     PHP.xdebug.auto_trace=Off \
     PHP.xdebug.cli_color=0 \
     PHP.xdebug.collect_assignments=Off \
@@ -642,23 +659,6 @@ ENV PHP.allow_url_fopen=1 \
     PHP.xdebug.var_display_max_children=128 \
     PHP.xdebug.var_display_max_data=512 \
     PHP.xdebug.var_display_max_depth=3 \
-    \
-    PHP.xmms.path= \
-    PHP.xmms.session= \
-    \
-    PHP.yami.response.timeout= \
-    \
-    PHP.yaz.keepalive= \
-    PHP.yaz.log_mask= \
-    \
-    PHP.zend.enable_gc=1 \
-    PHP.zend.multibyte=0 \
-    PHP.zend.script_encoding= \
-    PHP.zend.signal_check=0 \
-    \
-    PHP.zlib.output_compression= \
-    PHP.zlib.output_compression_level=-1 \
-    PHP.zlib.output_handler= \
     \
     FPM.access.format="%R - %u %t \"%m %r\" %s" \
     FPM.listen.backlog=511 \
