@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -e
+set -o pipefail
+
+docker image build \
+  -t jtreminio/php-nginx:7.3 \
+  -f Dockerfile-7.3 \
+  .
+cat << EOF
+Push to Docker Hub with:
+
+docker image push jtreminio/php-nginx:7.3
+EOF
+
+docker image build \
+  -t jtreminio/php-nginx:7.2 \
+  -f Dockerfile-7.2 \
+  .
+cat << EOF
+Push to Docker Hub with:
+
+docker image push jtreminio/php-nginx:7.2
+EOF
+
+docker image build \
+  -t jtreminio/php-nginx:7.1 \
+  -f Dockerfile-7.1 \
+  .
+cat << EOF
+Push to Docker Hub with:
+
+docker image push jtreminio/php-nginx:7.1
+EOF
+
+docker image build \
+  -t jtreminio/php-nginx:7.0 \
+  -f Dockerfile-7.0 \
+  .
+cat << EOF
+Push to Docker Hub with:
+
+docker image push jtreminio/php-nginx:7.0
+EOF
+
+docker image build \
+  -t jtreminio/php-nginx:5.6 \
+  -f Dockerfile-5.6 \
+  .
+cat << EOF
+Push to Docker Hub with:
+
+docker image push jtreminio/php-nginx:5.6
+EOF
