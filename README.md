@@ -122,7 +122,8 @@ You can set a large number of PHP INI settings using environment variables.
 
 [You can read about this in more detail here](https://jtreminio.com/blog/docker-php/php-fpm-configuration-via-environment-variables/).
 
-    # docker container run -it --rm jtreminio/php:7.2 php -i | grep display_errors
+    # docker container run -it --rm \
+        jtreminio/php:7.2 php -i | grep display_errors
     100:display_errors => Off => Off
 
 vs
@@ -150,12 +151,38 @@ Many modules are installed by _not_ enabled by default:
 * [Installed, not Enabled Modules for 7.0](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0#L61)
 * [Installed, not Enabled Modules for 5.6](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6#L61)
 
-You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special shortcut has been created
-to more easily add modules:
+You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special shortcut has been created to more easily add modules:
 
     # docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/amqp:/p/mailparse \
         jtreminio/php:latest php -v
+
+The `/p` directory contains symlinks to others:
+
+    /p/amqp            -> /etc/php/extra-mods/amqp
+    /p/apcu            -> /etc/php/extra-mods/apcu
+    /p/geoip           -> /etc/php/extra-mods/geoip
+    /p/gnupg           -> /etc/php/extra-mods/gnupg
+    /p/imagick         -> /etc/php/extra-mods/imagick
+    /p/lua             -> /etc/php/extra-mods/lua
+    /p/mailparse       -> /etc/php/extra-mods/mailparse
+    /p/memcached       -> /etc/php/extra-mods/memcached
+    /p/mongodb         -> /etc/php/extra-mods/mongodb
+    /p/oauth           -> /etc/php/extra-mods/oauth
+    /p/pdo_sqlite      -> /etc/php/extra-mods/pdo_sqlite
+    /p/radius          -> /etc/php/extra-mods/radius
+    /p/raphf           -> /etc/php/extra-mods/raphf
+    /p/redis           -> /etc/php/extra-mods/redis
+    /p/solr            -> /etc/php/extra-mods/solr
+    /p/sqlite3         -> /etc/php/extra-mods/sqlite3
+    /p/ssh2            -> /etc/php/extra-mods/ssh2
+    /p/stomp           -> /etc/php/extra-mods/stomp
+    /p/uploadprogress  -> /etc/php/extra-mods/uploadprogress
+    /p/uuid            -> /etc/php/extra-mods/uuid
+    /p/xdebug          -> /etc/php/extra-mods/xdebug
+    /p/zmq             -> /etc/php/extra-mods/zmq
+
+You can add as many of these as you want to `PHP_INI_SCAN_DIR`, make sure to prepend `:`.
 
 ## Xdebug
 
