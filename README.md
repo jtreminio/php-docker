@@ -116,61 +116,11 @@ PHP-FPM listens on port `9000` and is run by calling `/usr/bin/php-fpm`
 
 ## INI Through Environment Variables
 
-Common PHP INI values are set via env vars.
+You can set a large number of PHP INI settings using environment variables.
 
-Only a small subset of values work right now. Any more will require a PR.
+[A full list of supported directives can be found here](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-env).
 
-The INI file in the container looks like this:
-
-    [custom]
-    session.save_path = "${SESSION_SAVE_PATH}"
-    display_errors = "${PHP_DISPLAY_ERRORS}"
-    error_reporting = ${PHP_ERROR_REPORTING}
-    date.timezone = "${DATE_TIMEZONE}"
-    opcache.enable = ${OPCACHE_ENABLE}
-    opcache.enable_cli = ${OPCACHE_ENABLE_CLI}
-    opcache.fast_shutdown = ${OPCACHE_FAST_SHUTDOWN}
-    opcache.interned_strings_buffer = ${OPCACHE_INTERNED_STRINGS_BUFFER}
-    opcache.max_accelerated_files = ${OPCACHE_MAX_ACCELERATED_FILES}
-    opcache.memory_consumption = ${OPCACHE_MEMORY_CONSUMPTION}
-    opcache.revalidate_freq = ${OPCACHE_REVALIDATE_FREQ}
-    opcache.validate_timestamps = ${OPCACHE_VALIDATE_TIMESTAMPS}
-    
-    [xdebug]
-    xdebug.remote_host = "${XDEBUG_REMOTE_HOST}"
-    xdebug.default_enable = ${XDEBUG_DEFAULT_ENABLE}
-    xdebug.remote_autostart = ${XDEBUG_REMOTE_AUTOSTART}
-    xdebug.remote_connect_back = ${XDEBUG_REMOTE_CONNECT_BACK}
-    xdebug.remote_enable = ${XDEBUG_REMOTE_ENABLE}
-    xdebug.remote_handler = "${XDEBUG_REMOTE_HANDLER}"
-    xdebug.remote_port = ${XDEBUG_REMOTE_PORT}
-
-With the default values set in the `Dockerfile` PHP then reads the above as:
-
-    [custom]
-    session.save_path = "/var/lib/php/sessions"
-    display_errors = "Off"
-    error_reporting = 0
-    date.timezone = "UTC"
-    opcache.enable = 1
-    opcache.enable_cli = 1
-    opcache.fast_shutdown = 1
-    opcache.interned_strings_buffer = 1
-    opcache.max_accelerated_files = 16
-    opcache.memory_consumption = 40000
-    opcache.revalidate_freq = 256
-    opcache.validate_timestamps = 0
-    
-    [xdebug]
-    xdebug.remote_host = "host.docker.internal"
-    xdebug.default_enable = 1
-    xdebug.remote_autostart = 1
-    xdebug.remote_connect_back = 1
-    xdebug.remote_enable = 1
-    xdebug.remote_handler = "dbgp"
-    xdebug.remote_port = 9000
-
-You can override any of the above values by using the `-e` flag:
+[You can read about this in more detail here](https://jtreminio.com/blog/docker-php/php-fpm-configuration-via-environment-variables/).
 
     # docker container run -it --rm jtreminio/php:7.2 php -i | grep display_errors
     100:display_errors => Off => Off
@@ -178,9 +128,34 @@ You can override any of the above values by using the `-e` flag:
 vs
 
     # docker container run -it --rm \
-        -e PHP_DISPLAY_ERRORS=1 \
+        -e PHP.display_errors=1 \
         jtreminio/php:7.2 php -i | grep display_errors
     100:display_errors => STDOUT => STDOUT
+
+## Installed Modules
+
+Many modules are installed and enabled by default:
+
+* [Enabled Modules for 7.3](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3#L50)
+* [Enabled Modules for 7.2](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2#L49)
+* [Enabled Modules for 7.1](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1#L49)
+* [Enabled Modules for 7.0](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0#L49)
+* [Enabled Modules for 5.6](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6#L49)
+
+Many modules are installed by _not_ enabled by default:
+
+* [Installed, not Enabled Modules for 7.3](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3#L62)
+* [Installed, not Enabled Modules for 7.2](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2#L61)
+* [Installed, not Enabled Modules for 7.1](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1#L61)
+* [Installed, not Enabled Modules for 7.0](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0#L61)
+* [Installed, not Enabled Modules for 5.6](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6#L61)
+
+You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special shortcut has been created
+to more easily add modules:
+
+    # docker container run -it --rm \
+        -e PHP_INI_SCAN_DIR=:/p/amqp:/p/mailparse \
+        jtreminio/php:latest php -v
 
 ## Xdebug
 
@@ -195,7 +170,7 @@ Xdebug is _installed_ but _disabled_ by default:
 To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env var:
 
     # docker container run -it --rm \
-        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
+        -e PHP_INI_SCAN_DIR=:/p/xdebug \
         jtreminio/php:latest php -v
     PHP 7.2.7-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jun 22 2018 08:45:49) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
@@ -203,18 +178,14 @@ To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env 
         with Zend OPcache v7.2.7-1+ubuntu18.04.1+deb.sury.org+1, Copyright (c) 1999-2018, by Zend Technologies
         with Xdebug v2.6.0, Copyright (c) 2002-2018, by Derick Rethans
 
-Note the prepended `:` in `:/etc/php/xdebug-conf.d`.
-
-`xdebug.remote_connect_back` is enabled so Xdebug will attempt to connect back to whatever host initiates the connection.
-
-If you wish to disable it and use `xdebug.remote_host`:
+Note the prepended `:` in `:/p/xdebug`.
 
 `xdebug.remote_host` is set to `host.docker.internal` by default. [This will not work in Linux (yet)](https://github.com/docker/for-linux/issues/264).
 You must either pass your host IP directly, or use a gateway. I have found `172.17.0.1` to work in most cases:
 
     # docker container run -it --rm \
-        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
-        -e XDEBUG_REMOTE_HOST=172.17.0.1 \
+        -e PHP_INI_SCAN_DIR=:/p/xdebug \
+        -e PHP.xdebug.remote_host=172.17.0.1 \
         jtreminio/php:latest php -i | grep xdebug.remote_host
     860:xdebug.remote_host => 127.0.0.1 => 127.0.0.1
     
@@ -223,7 +194,7 @@ A helper script has been created at `/usr/bin/xdebug` to help you debug CLI appl
 To use it, call it instead of `php` directly:
 
     # docker container run -it --rm \
-        -e PHP_INI_SCAN_DIR=:/etc/php/xdebug-conf.d \
+        -e PHP_INI_SCAN_DIR=:/p/xdebug \
         jtreminio/php:latest xdebug -v
     PHP 7.2.8-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jul 25 2018 10:52:19) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
