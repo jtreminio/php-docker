@@ -12,7 +12,7 @@ Push to Docker Hub with:
 docker image push jtreminio/phpenv:latest
 EOF
 
-PHP73="7.3.0-rc2"
+PHP73="7.3.0"
 docker image build \
   -t jtreminio/php:7.3 \
   -t jtreminio/php:${PHP73} \
@@ -25,7 +25,7 @@ docker image push jtreminio/php:7.3
 docker image push jtreminio/php:${PHP73}
 EOF
 
-PHP72="7.2.12"
+PHP72="7.2.13"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP72} \
   -t jtreminio/php:7.2 \
@@ -41,7 +41,7 @@ docker image push jtreminio/php:${PHP72}
 docker image push jtreminio/php:latest
 EOF
 
-PHP71="7.1.24"
+PHP71="7.1.25"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP71} \
   -t jtreminio/php:7.1 \
@@ -55,7 +55,7 @@ docker image push jtreminio/php:7.1
 docker image push jtreminio/php:${PHP71}
 EOF
 
-PHP70="7.0.32"
+PHP70="7.0.33"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP70} \
   -t jtreminio/php:7.0 \

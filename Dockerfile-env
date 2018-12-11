@@ -208,11 +208,11 @@ ENV PHP.allow_url_fopen=1 \
     \
     PHP.hidef.ini_path= \
     \
-    PHP.highlight.comment=#FF8000 \
-    PHP.highlight.default=#0000BB \
-    PHP.highlight.html=#000000 \
-    PHP.highlight.keyword=#007700 \
-    PHP.highlight.string=#DD0000 \
+    PHP.highlight.comment="#FF8000" \
+    PHP.highlight.default="#0000BB" \
+    PHP.highlight.html="#000000" \
+    PHP.highlight.keyword="#007700" \
+    PHP.highlight.string="#DD0000" \
     \
     PHP.htscanner.config_file= \
     PHP.htscanner.default_docroot= \
@@ -564,7 +564,7 @@ ENV PHP.allow_url_fopen=1 \
     \
     PHP.uploadprogress.file.filename_template= \
     \
-    PHP.url_rewriter.tags=form= \
+    PHP.url_rewriter.tags="form=" \
     \
     PHP.user_ini.cache_ttl=300 \
     PHP.user_ini.filename=.user.ini \
