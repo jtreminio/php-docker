@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:""}
+PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-""}
 # Prevent defining xdebug INI location twice
 if [[ ${PHP_INI_SCAN_DIR} != *"xdebug"* ]]; then
     PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR}:/p/xdebug
