@@ -126,27 +126,49 @@ RUN rm -f /etc/php/${PHP_VER}/fpm/php-fpm.conf &&\
 # Shortcut directories are created at /p, eg: /p/xdebug, /p/memcached
 # You can specify as PHP_INI_SCAN_DIR=:/p/xdebug:/p/memcached
 # Make sure to begin the command with `:`
-RUN rm -f /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-amqp.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-apcu.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-geoip.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-gnupg.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-imagick.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/25-mailparse.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/25-memcached.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-mongodb.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-oauth.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-pdo_sqlite.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-radius.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-raphf.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-redis.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-solr.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-sqlite3.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-ssh2.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-stomp.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-uploadprogress.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-uuid.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-zmq.ini \
-          /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-xdebug.ini &&\
+RUN rm -f \
+        /etc/php/${PHP_VER}/cli/conf.d/20-amqp.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-amqp.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-apcu.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-apcu.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-geoip.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-geoip.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-gnupg.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-gnupg.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-imagick.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-imagick.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/25-mailparse.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/25-mailparse.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/25-memcached.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/25-memcached.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-mongodb.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-mongodb.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-oauth.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-oauth.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-pdo_sqlite.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-pdo_sqlite.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-radius.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-radius.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-raphf.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-raphf.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-redis.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-redis.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-solr.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-solr.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-sqlite3.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-sqlite3.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-ssh2.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-ssh2.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-stomp.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-stomp.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-uploadprogress.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-uploadprogress.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-uuid.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-uuid.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-zmq.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-zmq.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-xdebug.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-xdebug.ini &&\
     \
     install -d -m 0755 -o www-data -g www-data \
         /etc/php/extra-mods \
@@ -216,6 +238,8 @@ RUN rm -f /etc/php/${PHP_VER}/{cli,fpm}/conf.d/20-amqp.ini \
     ln -s /etc/php/extra-mods/uuid           /p/uuid &&\
     ln -s /etc/php/extra-mods/zmq            /p/zmq &&\
     ln -s /etc/php/extra-mods/xdebug         /p/xdebug
+
+RUN rm -rf /etc/apache2
 
 # Standardize PHP-FPM executable location
 RUN rm -f /usr/sbin/php-fpm &&\
