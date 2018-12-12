@@ -1,6 +1,6 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `7.3`, ([php7.3-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.3))
+* `7.3` ([php7.3-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.3))
 * `7.2` ([php7.2-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.2))
 * `7.1` ([php7.1-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.1))
 * `7.0` ([php7.0-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.0))
