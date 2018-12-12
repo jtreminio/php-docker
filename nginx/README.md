@@ -68,7 +68,6 @@ Then create a `docker-compose.yml` that would look like this:
     services:
       web:
         image: jtreminio/php-nginx:7.2
-        command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
         labels:
           - traefik.backend=php-nginx-nginx
           - traefik.docker.network=traefik_webgateway
