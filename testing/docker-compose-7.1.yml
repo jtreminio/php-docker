@@ -21,7 +21,6 @@ services:
       - ${PWD}/testing/vhost.conf:/etc/nginx/conf.d/default.conf
   php:
     image: jtreminio/php:7.1
-    command: /usr/bin/php-fpm
     networks:
       - private
     volumes:
@@ -43,7 +42,6 @@ services:
       - ${PWD}/testing/vhost-de.conf:/etc/nginx/conf.d/default.conf
   php-de:
     image: jtreminio/php:7.1
-    command: /usr/bin/php-fpm
     environment:
       - PHP.display_errors=1
     networks:
@@ -67,7 +65,6 @@ services:
       - ${PWD}/testing/vhost-xdebug.conf:/etc/nginx/conf.d/default.conf
   php-xdebug:
     image: jtreminio/php:7.1
-    command: /usr/bin/php-fpm
     environment:
       - PHP_INI_SCAN_DIR=:/p/xdebug
       - PHP.xdebug.remote_host=custom.localhost

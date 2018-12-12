@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM phusion/baseimage:0.11
 
 ENV PHP.allow_url_fopen=1 \
     PHP.allow_url_include= \
@@ -661,6 +661,7 @@ ENV PHP.allow_url_fopen=1 \
     PHP.xdebug.var_display_max_depth=3 \
     \
     FPM.access.format="%R - %u %t \"%m %r\" %s" \
+    FPM.listen="0.0.0.0:9000" \
     FPM.listen.backlog=511 \
     FPM.listen.mode=0660 \
     FPM.pm=dynamic \

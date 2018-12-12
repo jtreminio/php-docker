@@ -104,12 +104,12 @@ RUN install -d -m 0755 -o www-data -g www-data /.composer &&\
 
 # Save INI and FPM conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
-ADD --chown=www-data:www-data files/php.ini  /etc/php/php.ini
-ADD --chown=www-data:www-data files/fpm.conf /etc/php/fpm.conf
+COPY files/php.ini  /etc/php/php.ini
+COPY files/fpm.conf /etc/php/fpm.conf
 
 # Use the following to mount your custom INI files as Volumes
-ADD --chown=www-data:www-data files/blank.ini /etc/php/cli-custom.ini
-ADD --chown=www-data:www-data files/blank.ini /etc/php/php-custom.ini
+COPY files/blank.ini /etc/php/cli-custom.ini
+COPY files/blank.ini /etc/php/php-custom.ini
 
 # Set up PID and sessions directories
 RUN install -d -m 0755 -o www-data -g www-data \
@@ -239,13 +239,17 @@ RUN rm -f /usr/sbin/php-fpm &&\
     ln -s /usr/sbin/php-fpm${PHP_VER} /usr/sbin/php-fpm
 
 # Only set PHP_INI_SCAN_DIR inside following file so it does not affect PHP CLI
-COPY files/php-fpm /usr/bin/php-fpm
+# runit config
+RUN mkdir /etc/service/fpm
+COPY files/php-fpm /etc/service/fpm/run
+RUN chmod +x /etc/service/fpm/run
+
 # Xdebug CLI debugging
 COPY files/xdebug /usr/bin/xdebug
-
-RUN chmod +x /usr/bin/php-fpm &&\
-    chmod +x /usr/bin/xdebug
+RUN chmod +x /usr/bin/xdebug
 
 WORKDIR /etc/php/${PHP_VER}
 
 EXPOSE 9000
+
+CMD ["/sbin/my_init"]
