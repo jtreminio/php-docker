@@ -664,6 +664,7 @@ ENV PHP.allow_url_fopen=1 \
     FPM.listen="0.0.0.0:9000" \
     FPM.listen.backlog=511 \
     FPM.listen.mode=0660 \
+    FPM.pid="/var/run/php-fpm/php-fpm.pid" \
     FPM.pm=dynamic \
     FPM.pm.max_children=5 \
     FPM.pm.start_servers=2 \
