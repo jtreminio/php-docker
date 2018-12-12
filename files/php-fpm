@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 
-PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-":/etc/php/fpm-conf.d/"}
+# Prevent empty PHP_INI_SCAN_DIR
+# The below in docker-compose.yml sets value to literal "", so remove quotes
+# environment:
+#   - PHP_INI_SCAN_DIR=""
+PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-""}
+PHP_INI_SCAN_DIR=$(echo "${PHP_INI_SCAN_DIR}" | tr -d '"' | tr -d "'")
+if [[ ! ${PHP_INI_SCAN_DIR} ]]; then
+    # No preceding ":" if empty, otherwise default location and this location will load
+    # INI files twice, causing warning
+    PHP_INI_SCAN_DIR=/etc/php/fpm-conf.d/
+fi
+
+export PHP_INI_SCAN_DIR
 
 exec /usr/sbin/php-fpm \
-            -c ${PHP_INI_SCAN_DIR} \
             --nodaemonize \
             --force-stderr 2>&1 | \
         sed -u 's,.*: \"\(.*\)$,\1,'| \

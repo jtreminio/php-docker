@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
+# Prevent empty PHP_INI_SCAN_DIR
+# The below in docker-compose.yml sets value to literal "", so remove quotes
+# environment:
+#   - PHP_INI_SCAN_DIR=""
 PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-""}
+PHP_INI_SCAN_DIR=$(echo "${PHP_INI_SCAN_DIR}" | tr -d '"' | tr -d "'")
+
 # Prevent defining xdebug INI location twice
 if [[ ${PHP_INI_SCAN_DIR} != *"xdebug"* ]]; then
     PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR}:/p/xdebug
