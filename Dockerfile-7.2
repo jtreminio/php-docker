@@ -21,9 +21,7 @@ RUN apt-get update &&\
     rm -f /root/ondrej.pgp &&\
     apt-get update &&\
     apt-get -y --purge autoremove &&\
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-           /usr/lib/x86_64-linux-gnu/perl /usr/share/perl \
-           /usr/lib/x86_64-linux-gnu/libperl.* /usr/share/{man,doc}
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
 
 ENV COMPOSER_HOME /.composer
 ENV PHP_VER 7.2
@@ -45,7 +43,7 @@ ENV DEL_PHP_DIR /etc/php/5.6 \
 # First group of modules are enabled by default
 # Second group must have their INI directories included via PHP_INI_SCAN_DIR
 RUN apt-get update &&\
-    apt-get -y install --no-install-recommends --no-install-suggests \
+    apt-get install --no-install-recommends --no-install-suggests -y \
         php${PHP_VER}-bcmath \
         php${PHP_VER}-cli \
         php${PHP_VER}-curl \
@@ -82,13 +80,7 @@ RUN apt-get update &&\
         php-pear \
         php-xdebug &&\
     apt-get -y --purge autoremove &&\
-    rm -rf /tmp/* \
-           /var/tmp/* \
-           /var/lib/apt/lists/* \
-           /usr/lib/x86_64-linux-gnu/perl \
-           /usr/share/perl \
-           /usr/lib/x86_64-linux-gnu/libperl.* \
-           /usr/share/{man,doc}
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
 
 # Delete directories belonging to other PHP versions
 RUN rm -rf ${DEL_LIB_PHP_DIR} \
