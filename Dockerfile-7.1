@@ -58,6 +58,7 @@ RUN apt-get update &&\
         \
         php${PHP_VER}-amqp \
         php${PHP_VER}-apcu \
+        php${PHP_VER}-gd \
         php${PHP_VER}-geoip \
         php${PHP_VER}-gnupg \
         php${PHP_VER}-igbinary \
@@ -132,6 +133,8 @@ RUN rm -f \
         /etc/php/${PHP_VER}/fpm/conf.d/20-amqp.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-apcu.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/20-apcu.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-gd.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-gd.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-geoip.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/20-geoip.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-gnupg.ini \
@@ -179,6 +182,7 @@ RUN rm -f \
         /etc/php/extra-mods \
         /etc/php/extra-mods/amqp \
         /etc/php/extra-mods/apcu \
+        /etc/php/extra-mods/gd \
         /etc/php/extra-mods/geoip \
         /etc/php/extra-mods/gnupg \
         /etc/php/extra-mods/imagick \
@@ -203,6 +207,7 @@ RUN rm -f \
     \
     mv /etc/php/${PHP_VER}/mods-available/amqp.ini           /etc/php/extra-mods/amqp/ &&\
     mv /etc/php/${PHP_VER}/mods-available/apcu.ini           /etc/php/extra-mods/apcu/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/gd.ini             /etc/php/extra-mods/gd/ &&\
     mv /etc/php/${PHP_VER}/mods-available/geoip.ini          /etc/php/extra-mods/geoip/ &&\
     mv /etc/php/${PHP_VER}/mods-available/gnupg.ini          /etc/php/extra-mods/gnupg/ &&\
     mv /etc/php/${PHP_VER}/mods-available/imagick.ini        /etc/php/extra-mods/imagick/ &&\
@@ -228,6 +233,7 @@ RUN rm -f \
     install -d -m 0755 -o www-data -g www-data /p &&\
     ln -s /etc/php/extra-mods/amqp           /p/amqp &&\
     ln -s /etc/php/extra-mods/apcu           /p/apcu &&\
+    ln -s /etc/php/extra-mods/gd             /p/gd &&\
     ln -s /etc/php/extra-mods/geoip          /p/geoip &&\
     ln -s /etc/php/extra-mods/gnupg          /p/gnupg &&\
     ln -s /etc/php/extra-mods/imagick        /p/imagick &&\
