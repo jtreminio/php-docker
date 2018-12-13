@@ -5,7 +5,8 @@ RUN printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/nginx/ubuntu bionic
 >/etc/apt/sources.list.d/ondrej-nginx.list &&\
     apt-get update &&\
     apt-get install --no-install-recommends --no-install-suggests -y \
-        nginx &&\
+        nginx \
+        libnginx-mod-http-perl &&\
     apt-get -y --purge autoremove &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
 
@@ -25,6 +26,11 @@ COPY files/vhost.conf /etc/nginx/sites-available/default
 RUN mkdir /etc/service/nginx
 COPY files/nginx /etc/service/nginx/run
 RUN chmod +x /etc/service/nginx/run
+
+RUN mkdir /etc/service/fpm-xdebug
+COPY files/fpm-xdebug /etc/service/fpm-xdebug/run
+RUN chmod +x /etc/service/fpm-xdebug/run &&\
+    touch /var/log/fpm-xdebug-tail
 
 # Replace 0.0.0.0:9000
 ENV FPM.listen="127.0.0.1:9000"

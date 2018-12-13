@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+PHPFPM_XDEBUG=${PHPFPM_XDEBUG:-""}
+MATCH=On
+# If phpfpm xdebug instance not wanted, run fake tail service
+if [ "${PHPFPM_XDEBUG,,}" != "${MATCH,,}" ]; then
+    echo "PHP-FPM with Xdebug DISABLED"
+    exec tail -f /var/log/fpm-xdebug-tail
+    exit 0
+fi
+
+echo "PHP-FPM with Xdebug ENABLED"
+
+# Prevent empty PHP_INI_SCAN_DIR
+# The below in docker-compose.yml sets value to literal "", so remove quotes
+# environment:
+#   - PHP_INI_SCAN_DIR=""
+PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-""}
+PHP_INI_SCAN_DIR=$(echo "${PHP_INI_SCAN_DIR}" | tr -d '"' | tr -d "'")
+if [[ ! ${PHP_INI_SCAN_DIR} ]]; then
+    # No preceding ":" if empty, otherwise default location and this location will load
+    # INI files twice, causing warning
+    PHP_INI_SCAN_DIR=/etc/php/fpm-conf.d/
+fi
+
+# Prevent defining xdebug INI location twice
+if [[ ${PHP_INI_SCAN_DIR} != *"xdebug"* ]]; then
+    PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR}:/p/xdebug
+fi
+
+export PHP_INI_SCAN_DIR
+
+exec /usr/sbin/php-fpm \
+            -d FPM.pid="/var/run/php-fpm/php-fpm-xdebug.pid" \
+            -d FPM.listen="127.0.0.1:9999" \
+            --nodaemonize \
+            --force-stderr 2>&1 | \
+        sed -u 's,.*: \"\(.*\)$,\1,'| \
+        sed -u 's,"$,,' 1>&1
