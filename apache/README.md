@@ -21,7 +21,7 @@ These images come with Apache preinstalled. The vhost config is good enough for 
         DocumentRoot /var/www
     
         <FilesMatch "\.php$">
-            SetHandler proxy:fcgi://localhost:9000
+            SetHandler proxy:fcgi://127.0.0.1:9000
         </FilesMatch>
     
         <Directory "/var/www">
