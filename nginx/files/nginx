@@ -3,11 +3,10 @@
 # env PHPFPM_XDEBUG must be "On" or "on" to enable Xdebug support
 # Otherwise this is strictly disabled by default
 PHPFPM_XDEBUG=${PHPFPM_XDEBUG:-""}
-MATCH=On
-if [ "${PHPFPM_XDEBUG,,}" = "${MATCH,,}" ]; then
-    PHPFPM_XDEBUG=on
+if [ "${PHPFPM_XDEBUG,,}" = "on" ]; then
+    PHPFPM_XDEBUG_PORT=9999
 else
-    PHPFPM_XDEBUG=off
+    PHPFPM_XDEBUG_PORT=9000
 fi
 
-exec nginx -g "daemon off; env PHPFPM_XDEBUG=${PHPFPM_XDEBUG};"
+exec nginx -g "daemon off; env PHPFPM_XDEBUG_PORT=${PHPFPM_XDEBUG_PORT};"
