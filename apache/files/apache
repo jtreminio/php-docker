@@ -1,3 +1,14 @@
 #!/usr/bin/env bash
 
+# env PHPFPM_XDEBUG must be "On" or "on" to enable Xdebug support
+# Otherwise this is strictly disabled by default
+PHPFPM_XDEBUG=${PHPFPM_XDEBUG:-""}
+if [ "${PHPFPM_XDEBUG,,}" = "on" ]; then
+    PHPFPM_XDEBUG_PORT=9999
+else
+    PHPFPM_XDEBUG_PORT=9000
+fi
+
+export PHPFPM_XDEBUG_PORT
+
 exec /usr/sbin/apache2ctl -D FOREGROUND
