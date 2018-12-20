@@ -1,10 +1,10 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `7.3` ([php7.3-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.3))
-* `7.2` ([php7.2-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.2))
-* `7.1` ([php7.1-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.1))
-* `7.0` ([php7.0-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-7.0))
-* `5.6` ([php5.6-nginx/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-5.6))
+* `jtreminio/php-nginx:7.3` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.3))
+* `jtreminio/php-nginx:7.2` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.2))
+* `jtreminio/php-nginx:7.1` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.1))
+* `jtreminio/php-nginx:7.0` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.0))
+* `jtreminio/php-nginx:5.6` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-5.6))
 
 #### [This README best viewed on Github for formatting](https://github.com/jtreminio/php-docker/blob/master/nginx/README.md)
 
@@ -12,8 +12,57 @@
 
 ### Nginx config
 
-These images come with Nginx preinstalled. The vhost config is good enough for a basic PHP application:
+These PHP-FPM + Nginx images come several vhost configs baked in.
 
+[You can see the full list by going here](https://github.com/jtreminio/php-docker/tree/master/nginx/files/vhost).
+
+You can choose what vhost to use by passing the `VHOST` environment variable:
+
+    docker container run --rm -it \
+        -e VHOST=html \
+        jtreminio/php-nginx:7.3
+    
+    ** Running /etc/my_init.d/00_regen_ssh_host_keys.sh...
+    *** Running /etc/my_init.d/10_syslog-ng.init...
+    Dec 20 03:33:24 195edf7f2180 syslog-ng[13]: syslog-ng starting up; version='3.13.2'
+    *** Booting runit daemon...
+    *** Runit started as PID 20
+    Using /etc/nginx/sites-available/html.conf
+    [... snip ...]
+
+`VHOST` can be one of
+
+* drupal6
+* drupal7
+* drupal8
+* fpm
+* html
+* laravel
+* symfony2-dev (DEVELOPMENT ONLY)
+* symfony2-prod
+* symfony3-dev (DEVELOPMENT ONLY)
+* symfony3-prod
+* symfony4
+* wordpress
+
+Visit the Github link above to explore the details of each. If `VHOST` is not defined the image defaults to `fpm`:
+
+    docker container run --rm -it \
+        jtreminio/php-nginx:7.3
+    
+    ** Running /etc/my_init.d/00_regen_ssh_host_keys.sh...
+    *** Running /etc/my_init.d/10_syslog-ng.init...
+    Dec 20 03:35:07 4768163b60c4 syslog-ng[13]: syslog-ng starting up; version='3.13.2'
+    *** Booting runit daemon...
+    *** Runit started as PID 22
+    Using /etc/nginx/sites-available/fpm.conf
+    [... snip ...]
+
+The default FPM vhost config looks like:
+
+    # /etc/nginx/sites-available/fpm.conf
+    # Basic FPM
+    
     map $cookie_XDEBUG_SESSION $my_fastcgi_pass {
         default 127.0.0.1:9000;
         xdebug  127.0.0.1:${phpfpm_xdebug_port};
@@ -46,9 +95,30 @@ These images come with Nginx preinstalled. The vhost config is good enough for a
 
 The expected location of your `index.php` file is at `/var/www/index.php`.
 
-If you create your own custom vhost config, make sure to include the `map` function at the top of your file and use `fastcgi_pass $my_fastcgi_pass`.
+### Custom Vhost Config
 
-#### Xdebug support
+You can use your own custom vhost config by writing to file `/etc/nginx/sites-enabled/default`.
+
+If `/etc/nginx/sites-enabled/default` exists then `VHOST` env var will be ignored. 
+
+If you wish to have build-in Xdebug support make sure to use the following `map` and `fastcgi_pass` directives, like above:
+
+    map $cookie_XDEBUG_SESSION $my_fastcgi_pass {
+        default 127.0.0.1:9000;
+        xdebug  127.0.0.1:${phpfpm_xdebug_port};
+    }
+    
+    server {
+        [...]
+        
+        fastcgi_pass $my_fastcgi_pass;
+        
+        [...]
+    }
+
+You can read about this in greater detail at my blog post [All-in-One PHP-FPM + Nginx/Apache Containers](https://jtreminio.com/blog/all-in-one-php-fpm-nginx-apache-containers/). 
+
+#### Built-in Xdebug support
 
 These images come with Xdebug support but it is **disabled** by default.
 
@@ -58,7 +128,7 @@ A second PHP-FPM instance will be created with Xdebug enabled, listening to port
 
 You can debug your applications by [using PhpStorm's bookmarklets](https://www.jetbrains.com/phpstorm/marklets/). The IDE key must be `xdebug`, NOT `PHPSTORM`.
 
-For more information please refer to my blog post [Developing at Full Speed with Xdebug](https://jtreminio.com/blog/developing-at-full-speed-with-xdebug/).
+For more information please refer to my blog post [Developing at Full Speed with Xdebug](https://jtreminio.com/blog/developing-at-full-speed-with-xdebug/), and [All-in-One PHP-FPM + Nginx/Apache Containers](https://jtreminio.com/blog/all-in-one-php-fpm-nginx-apache-containers/).
 
 Note: If `PHPFPM_XDEBUG` is not set to `on`, the second PHP-FPM instance will NOT be created.
 
@@ -90,7 +160,7 @@ Then create a `docker-compose.yml` that would look like this:
       web:
         image: jtreminio/php-nginx:7.2
         labels:
-          - traefik.backend=php-nginx-nginx
+          - traefik.backend=php-nginx
           - traefik.docker.network=traefik_webgateway
           - traefik.frontend.rule=Host:php-nginx.localhost
           - traefik.port=8080
@@ -110,7 +180,7 @@ You can pass PHP INI settings like so:
       web:
         image: jtreminio/php-nginx:7.2
         labels:
-          - traefik.backend=php-nginx-nginx
+          - traefik.backend=php-nginx
           - traefik.docker.network=traefik_webgateway
           - traefik.frontend.rule=Host:php-nginx.localhost
           - traefik.port=8080
@@ -133,7 +203,7 @@ If you want to enable Xdebug support you must also pass `PHPFPM_XDEBUG`:
       web:
         image: jtreminio/php-nginx:7.2
         labels:
-          - traefik.backend=php-nginx-nginx
+          - traefik.backend=php-nginx
           - traefik.docker.network=traefik_webgateway
           - traefik.frontend.rule=Host:php-nginx.localhost
           - traefik.port=8080
@@ -141,6 +211,56 @@ If you want to enable Xdebug support you must also pass `PHPFPM_XDEBUG`:
           - public
         volumes:
           - ${PWD}/index.php:/var/www/index.php
+        environment:
+          - PHP.display_errors=On
+          - PHP.error_reporting=-1
+          - PHPFPM_XDEBUG=On
+
+You can easily switch vhost configs by using `VHOST`:
+
+    version: '3.2'
+    networks:
+      public:
+        external:
+          name: traefik_webgateway
+    services:
+      web:
+        image: jtreminio/php-nginx:7.2
+        labels:
+          - traefik.backend=php-nginx
+          - traefik.docker.network=traefik_webgateway
+          - traefik.frontend.rule=Host:php-nginx.localhost
+          - traefik.port=8080
+        networks:
+          - public
+        volumes:
+          - ${PWD}/index.php:/var/www/index.php
+        environment:
+          - PHP.display_errors=On
+          - PHP.error_reporting=-1
+          - PHPFPM_XDEBUG=On
+          - VHOST=symfony2
+
+Or, you can easily use a custom vhost config:
+
+    version: '3.2'
+    networks:
+      public:
+        external:
+          name: traefik_webgateway
+    services:
+      web:
+        image: jtreminio/php-nginx:7.2
+        labels:
+          - traefik.backend=php-nginx
+          - traefik.docker.network=traefik_webgateway
+          - traefik.frontend.rule=Host:php-nginx.localhost
+          - traefik.port=8080
+        networks:
+          - public
+        volumes:
+          - ${PWD}/index.php:/var/www/index.php
+          - ${PWD}/vhost.conf:/etc/nginx/sites-enabled/default
         environment:
           - PHP.display_errors=On
           - PHP.error_reporting=-1
