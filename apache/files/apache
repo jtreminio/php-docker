@@ -11,4 +11,16 @@ fi
 
 export PHPFPM_XDEBUG_PORT
 
+# If default vhost file does not exist, use env var VHOST to choose
+if [[ ! -f /etc/apache2/sites-enabled/default.conf ]]; then
+    VHOST=${VHOST:-"fpm"}
+    if [[ ${VHOST} != *".conf"* ]]; then
+        VHOST=${VHOST}.conf
+    fi
+
+    echo Using /etc/apache2/sites-available/${VHOST}
+
+    ln -s /etc/apache2/sites-available/${VHOST} /etc/apache2/sites-enabled/default.conf
+fi
+
 exec /usr/sbin/apache2ctl -D FOREGROUND
