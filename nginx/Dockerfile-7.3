@@ -20,7 +20,8 @@ RUN chown -R www-data:www-data \
     rm -rf /var/www/html
 
 COPY files/nginx.conf /etc/nginx/nginx.conf
-COPY files/vhost.conf /etc/nginx/sites-available/default
+COPY files/vhost/* /etc/nginx/sites-available/
+RUN rm -f /etc/nginx/sites-enabled/default
 
 # runit config
 RUN mkdir /etc/service/nginx
@@ -31,6 +32,9 @@ RUN mkdir /etc/service/fpm-xdebug
 COPY files/fpm-xdebug /etc/service/fpm-xdebug/run
 RUN chmod +x /etc/service/fpm-xdebug/run &&\
     touch /var/log/fpm-xdebug-tail
+
+# Default Nginx vhost to basic FPM config
+ENV VHOST=fpm
 
 # Replace 0.0.0.0:9000
 ENV FPM.listen="127.0.0.1:9000"

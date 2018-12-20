@@ -9,4 +9,16 @@ else
     PHPFPM_XDEBUG_PORT=9000
 fi
 
+# If default vhost file does not exist, use env var VHOST to choose
+if [[ ! -f /etc/nginx/sites-enabled/default ]]; then
+    VHOST=${VHOST:-"fpm"}
+    if [[ ${VHOST} != *".conf"* ]]; then
+        VHOST=${VHOST}.conf
+    fi
+
+    echo ln -s /etc/nginx/sites-available/${VHOST} /etc/nginx/sites-enabled/default
+
+    ln -s /etc/nginx/sites-available/${VHOST} /etc/nginx/sites-enabled/default
+fi
+
 exec nginx -g "daemon off; env PHPFPM_XDEBUG_PORT=${PHPFPM_XDEBUG_PORT};"
