@@ -96,7 +96,7 @@ You can use your own custom vhost config by writing to file `/etc/apache2/sites-
 
 If `/etc/apache2/sites-enabled/default.conf` exists then `VHOST` env var will be ignored. 
 
-If you wish to have build-in Xdebug support make sure to use the following `FilesMatch` directive:
+If you wish to use the built-in Xdebug support make sure to use the following `FilesMatch` directive:
 
     <FilesMatch "\.php$">
         <If "%{HTTP_COOKIE} =~ /XDEBUG_SESSION/">

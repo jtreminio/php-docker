@@ -101,7 +101,7 @@ You can use your own custom vhost config by writing to file `/etc/nginx/sites-en
 
 If `/etc/nginx/sites-enabled/default` exists then `VHOST` env var will be ignored. 
 
-If you wish to have build-in Xdebug support make sure to use the following `map` and `fastcgi_pass` directives, like above:
+If you wish to use the built-in Xdebug support make sure to use the following `map` and `fastcgi_pass` directives, like above:
 
     map $cookie_XDEBUG_SESSION $my_fastcgi_pass {
         default 127.0.0.1:9000;
