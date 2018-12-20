@@ -1,10 +1,10 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `7.3`, ([php7.3/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3))
-* `7.2`, `latest` ([php7.2/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2))
-* `7.1` ([php7.1/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1))
-* `7.0` ([php7.0/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0))
-* `5.6` ([php5.6/Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6))
+* `jtreminio/php:7.3`, ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3))
+* `jtreminio/php:7.2`, `jtreminio/php:latest` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2))
+* `jtreminio/php:7.1` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1))
+* `jtreminio/php:7.0` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0))
+* `jtreminio/php:5.6` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6))
 
 [All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php/tags/)
 
@@ -25,13 +25,14 @@ For PHP projects run through the command line interface (CLI), you can do the fo
 
 Then, run the commands to build and run the Docker image:
 
-    # docker build -t my-php-app .
-    # docker run -it --rm --name my-running-app my-php-app
+    docker build -t my-php-app .
+    
+    docker run -it --rm --name my-running-app my-php-app
 
 #### Run a single PHP script
 For many simple, single file projects, you may find it inconvenient  to write a complete `Dockerfile`. In such cases, you can run a PHP script by using the PHP Docker image directly:
 
-    # docker run -it --rm \
+    docker run -it --rm \
         --name my-running-script \
         -v "$PWD":/usr/src/myapp \
         -w /usr/src/myapp \
@@ -39,55 +40,13 @@ For many simple, single file projects, you may find it inconvenient  to write a 
 
 Note that all variants of the PHP image contain the PHP CLI.
 
-### With Nginx
+## With Nginx or Apache
 
-As long as the PHP and Nginx containers are on the same Network, Nginx simply needs to use `fastcgi_pass php:9000;`.
+I have created full-featured Nginx/Apache versions of these images.
 
-The following is an example for a Symfony 2 and Symfony 3 app:
+[Click here for `jtreminio/php-nginx`](https://hub.docker.com/r/jtreminio/php-nginx).
 
-    server {
-        listen *:8080 default_server;
-    
-        server_name _;
-        root /var/www/public;
-    
-        autoindex off;
-    
-        location / {
-            try_files $uri /app.php$is_args$args;
-        }
-    
-        location ~ ^/(app_dev|config)\.php(/|$) {
-            set $path_info $fastcgi_path_info;
-    
-            fastcgi_pass php:9000;
-            fastcgi_split_path_info ^(.+\.php)(/.*)$;
-    
-            include fastcgi_params;
-    
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            fastcgi_param DOCUMENT_ROOT $realpath_root;
-        }
-    
-        location ~ ^/app\.php(/|$) {
-            set $path_info $fastcgi_path_info;
-    
-            fastcgi_pass php:9000;
-            fastcgi_split_path_info ^(.+\.php)(/.*)$;
-    
-            include fastcgi_params;
-    
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            fastcgi_param DOCUMENT_ROOT $realpath_root;
-    
-            internal;
-        }
-    
-        location ~ \.php$ {
-            return 404;
-        }
-    }
-
+[Click here for `jtreminio/php-apache`](https://hub.docker.com/r/jtreminio/php-apache).
 
 ## About these images
 
@@ -97,7 +56,7 @@ They come with the most common PHP modules baked in. For a full list, please see
 
 `Composer` is installed at `/usr/local/bin/composer`
 
-PHP-CGI and PHP-CLI INI files, and PHP-FPM conf file are saved to standard location across all versions to make managing them all simpler.
+PHP-CGI and PHP-CLI INI files, and PHP-FPM conf file are saved to standard location across all versions to make managing them simpler.
 
 - PHP INI used by PHP-FPM is at `/etc/php/fpm.ini`
 - PHP INI use by CLI is at `/etc/php/cli.ini`
@@ -112,7 +71,21 @@ Use `-v your-file.ini:/etc/php/cli-custom.ini` to add your settings. These two f
 
 PHP-FPM includes fix for logging to stdout and stderr created by https://github.com/phpdocker-io/base-images
 
-PHP-FPM listens on port `9000` and is run by calling `/usr/bin/php-fpm`
+PHP-FPM listens on port `9000` and is run automatically by runit:
+
+    docker container run -it --rm \
+        jtreminio/php:7.2
+    
+    *** Running /etc/my_init.d/00_regen_ssh_host_keys.sh...
+    *** Running /etc/my_init.d/10_syslog-ng.init...
+    Dec 20 03:50:53 14ec8b232a61 syslog-ng[13]: syslog-ng starting up; version='3.13.2'
+    *** Booting runit daemon...
+    *** Runit started as PID 22
+    Dec 20 03:50:54 14ec8b232a61 cron[26]: (CRON) INFO (pidfile fd = 3)
+    Dec 20 03:50:54 14ec8b232a61 cron[26]: (CRON) INFO (Running @reboot jobs)
+    [20-Dec-2018 03:50:54] NOTICE: fpm is running, pid 32
+    [20-Dec-2018 03:50:54] NOTICE: ready to handle connections
+    [20-Dec-2018 03:50:54] NOTICE: systemd monitor interval set to 10000ms
 
 ## INI Through Environment Variables
 
@@ -122,15 +95,17 @@ You can set a large number of PHP INI settings using environment variables.
 
 [You can read about this in more detail here](https://jtreminio.com/blog/docker-php/php-fpm-configuration-via-environment-variables/).
 
-    # docker container run -it --rm \
+    docker container run -it --rm \
         jtreminio/php:7.2 php -i | grep display_errors
+    
     100:display_errors => Off => Off
 
 vs
 
-    # docker container run -it --rm \
+    docker container run -it --rm \
         -e PHP.display_errors=1 \
         jtreminio/php:7.2 php -i | grep display_errors
+    
     100:display_errors => STDOUT => STDOUT
 
 ## Installed Modules
@@ -153,11 +128,11 @@ Many modules are installed by _not_ enabled by default:
 
 You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special shortcut has been created to more easily add modules:
 
-    # docker container run -it --rm \
+    docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/amqp:/p/mailparse \
         jtreminio/php:latest php -v
 
-The `/p` directory contains symlinks to others:
+The `/p` directory contains symlinks to other directories:
 
     /p/amqp            -> /etc/php/extra-mods/amqp
     /p/apcu            -> /etc/php/extra-mods/apcu
@@ -184,11 +159,14 @@ The `/p` directory contains symlinks to others:
 
 You can add as many of these as you want to `PHP_INI_SCAN_DIR`, make sure to prepend `:`.
 
+You can read about this in greater detail by going to [PHP Modules Toggled via Environment Variables](https://jtreminio.com/blog/php-modules-toggled-via-environment-variables/).
+
 ## Xdebug
 
 Xdebug is _installed_ but _disabled_ by default:
 
-    # docker container run -it --rm jtreminio/php:latest php -v
+    docker container run -it --rm jtreminio/php:latest php -v
+    
     PHP 7.2.7-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jun 22 2018 08:45:49) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
     Zend Engine v3.2.0, Copyright (c) 1998-2018 Zend Technologies
@@ -196,9 +174,10 @@ Xdebug is _installed_ but _disabled_ by default:
 
 To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env var:
 
-    # docker container run -it --rm \
+    docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
         jtreminio/php:latest php -v
+    
     PHP 7.2.7-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jun 22 2018 08:45:49) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
     Zend Engine v3.2.0, Copyright (c) 1998-2018 Zend Technologies
@@ -210,19 +189,21 @@ Note the prepended `:` in `:/p/xdebug`.
 `xdebug.remote_host` is set to `host.docker.internal` by default. [This will not work in Linux (yet)](https://github.com/docker/for-linux/issues/264).
 You must either pass your host IP directly, or use a gateway. I have found `172.17.0.1` to work in most cases:
 
-    # docker container run -it --rm \
+    docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
         -e PHP.xdebug.remote_host=172.17.0.1 \
         jtreminio/php:latest php -i | grep xdebug.remote_host
+    
     860:xdebug.remote_host => 127.0.0.1 => 127.0.0.1
     
 A helper script has been created at `/usr/bin/xdebug` to help you debug CLI applications.
 
 To use it, call it instead of `php` directly:
 
-    # docker container run -it --rm \
+    docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
         jtreminio/php:latest xdebug -v
+    
     PHP 7.2.8-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jul 25 2018 10:52:19) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
     Zend Engine v3.2.0, Copyright (c) 1998-2018 Zend Technologies
