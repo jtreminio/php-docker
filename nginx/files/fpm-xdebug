@@ -2,7 +2,7 @@
 
 # If phpfpm xdebug instance not wanted, run fake tail service
 PHPFPM_XDEBUG=${PHPFPM_XDEBUG:-""}
-if [[ "${PHPFPM_XDEBUG,,}" = "on" ]]; then
+if [[ "${PHPFPM_XDEBUG,,}" != "on" ]]; then
     echo "PHP-FPM with Xdebug DISABLED"
     exec tail -f /var/log/fpm-xdebug-tail
     exit 0
