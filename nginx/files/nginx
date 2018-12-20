@@ -16,7 +16,7 @@ if [[ ! -f /etc/nginx/sites-enabled/default ]]; then
         VHOST=${VHOST}.conf
     fi
 
-    echo ln -s /etc/nginx/sites-available/${VHOST} /etc/nginx/sites-enabled/default
+    echo Using /etc/nginx/sites-available/${VHOST}
 
     ln -s /etc/nginx/sites-available/${VHOST} /etc/nginx/sites-enabled/default
 fi
