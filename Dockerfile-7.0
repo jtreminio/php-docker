@@ -81,7 +81,6 @@ RUN apt-get update &&\
         php${PHP_VER}-uploadprogress \
         php${PHP_VER}-uuid \
         php${PHP_VER}-zmq \
-        php-pear \
         php-xdebug &&\
     apt-get -y --purge autoremove &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
