@@ -1,7 +1,7 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `jtreminio/php:7.3`, ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3))
-* `jtreminio/php:7.2`, `jtreminio/php:latest` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2))
+* `jtreminio/php:7.3`, `jtreminio/php:latest` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.3))
+* `jtreminio/php:7.2` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2))
 * `jtreminio/php:7.1` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1))
 * `jtreminio/php:7.0` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0))
 * `jtreminio/php:5.6` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6))
@@ -130,7 +130,7 @@ You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special 
 
     docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/amqp:/p/mailparse \
-        jtreminio/php:latest php -v
+        jtreminio/php:7.3 php -v
 
 The `/p` directory contains symlinks to other directories:
 
@@ -165,7 +165,7 @@ You can read about this in greater detail by going to [PHP Modules Toggled via E
 
 Xdebug is _installed_ but _disabled_ by default:
 
-    docker container run -it --rm jtreminio/php:latest php -v
+    docker container run -it --rm jtreminio/php:7.2 php -v
     
     PHP 7.2.7-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jun 22 2018 08:45:49) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
@@ -176,7 +176,7 @@ To enable (ONLY on non-public servers!) you must use the `PHP_INI_SCAN_DIR` env 
 
     docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
-        jtreminio/php:latest php -v
+        jtreminio/php:7.2 php -v
     
     PHP 7.2.7-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jun 22 2018 08:45:49) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
@@ -192,7 +192,7 @@ You must either pass your host IP directly, or use a gateway. I have found `172.
     docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
         -e PHP.xdebug.remote_host=172.17.0.1 \
-        jtreminio/php:latest php -i | grep xdebug.remote_host
+        jtreminio/php:7.2 php -i | grep xdebug.remote_host
     
     860:xdebug.remote_host => 127.0.0.1 => 127.0.0.1
     
@@ -202,7 +202,7 @@ To use it, call it instead of `php` directly:
 
     docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
-        jtreminio/php:latest xdebug -v
+        jtreminio/php:7.2 xdebug -v
     
     PHP 7.2.8-1+ubuntu18.04.1+deb.sury.org+1 (cli) (built: Jul 25 2018 10:52:19) ( NTS )
     Copyright (c) 1997-2018 The PHP Group
