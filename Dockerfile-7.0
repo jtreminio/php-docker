@@ -73,6 +73,7 @@ RUN apt-get update &&\
         php${PHP_VER}-radius \
         php${PHP_VER}-raphf \
         php${PHP_VER}-redis \
+        php${PHP_VER}-soap \
         php${PHP_VER}-sodium \
         php${PHP_VER}-solr \
         php${PHP_VER}-sqlite3 \
@@ -160,6 +161,8 @@ RUN rm -f \
         /etc/php/${PHP_VER}/fpm/conf.d/20-raphf.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-redis.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/20-redis.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-soap.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-soap.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-sodium.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/20-sodium.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-solr.ini \
@@ -196,6 +199,7 @@ RUN rm -f \
         /etc/php/extra-mods/radius \
         /etc/php/extra-mods/raphf \
         /etc/php/extra-mods/redis \
+        /etc/php/extra-mods/soap \
         /etc/php/extra-mods/sodium \
         /etc/php/extra-mods/solr \
         /etc/php/extra-mods/sqlite3 \
@@ -221,6 +225,7 @@ RUN rm -f \
     mv /etc/php/${PHP_VER}/mods-available/radius.ini         /etc/php/extra-mods/radius/ &&\
     mv /etc/php/${PHP_VER}/mods-available/raphf.ini          /etc/php/extra-mods/raphf/ &&\
     mv /etc/php/${PHP_VER}/mods-available/redis.ini          /etc/php/extra-mods/redis/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/soap.ini           /etc/php/extra-mods/soap/ &&\
     mv /etc/php/${PHP_VER}/mods-available/sodium.ini         /etc/php/extra-mods/sodium/ &&\
     mv /etc/php/${PHP_VER}/mods-available/solr.ini           /etc/php/extra-mods/solr/ &&\
     mv /etc/php/${PHP_VER}/mods-available/sqlite3.ini        /etc/php/extra-mods/sqlite3/ &&\
@@ -247,6 +252,7 @@ RUN rm -f \
     ln -s /etc/php/extra-mods/radius         /p/radius &&\
     ln -s /etc/php/extra-mods/raphf          /p/raphf &&\
     ln -s /etc/php/extra-mods/redis          /p/redis &&\
+    ln -s /etc/php/extra-mods/soap           /p/soap &&\
     ln -s /etc/php/extra-mods/sodium         /p/sodium &&\
     ln -s /etc/php/extra-mods/solr           /p/solr &&\
     ln -s /etc/php/extra-mods/sqlite3        /p/sqlite3 &&\

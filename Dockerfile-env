@@ -535,11 +535,11 @@ ENV PHP.allow_url_fopen=1 \
     PHP.simple_cvs.userName= \
     PHP.simple_cvs.workingDir= \
     \
-    PHP.soap.wsdl_cache= \
-    PHP.soap.wsdl_cache_dir= \
-    PHP.soap.wsdl_cache_enabled= \
-    PHP.soap.wsdl_cache_limit= \
-    PHP.soap.wsdl_cache_ttl= \
+    PHP.soap.wsdl_cache=1 \
+    PHP.soap.wsdl_cache_dir=/tmp \
+    PHP.soap.wsdl_cache_enabled=1 \
+    PHP.soap.wsdl_cache_limit=86400 \
+    PHP.soap.wsdl_cache_ttl=5 \
     \
     PHP.sql.safe_mode= \
     \
