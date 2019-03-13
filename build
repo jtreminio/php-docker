@@ -7,7 +7,7 @@ docker image build \
     -f Dockerfile-env \
     .
 
-PHP73="7.3.2"
+PHP73="7.3.3"
 docker image build \
   -t jtreminio/php:7.3 \
   -t jtreminio/php:${PHP73} \
@@ -15,7 +15,7 @@ docker image build \
   -f Dockerfile-7.3 \
   .
 
-PHP72="7.2.15"
+PHP72="7.2.16"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP72} \
   -t jtreminio/php:7.2 \
@@ -23,7 +23,7 @@ docker image build \
   -f Dockerfile-7.2 \
   .
 
-PHP71="7.1.26"
+PHP71="7.1.27"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP71} \
   -t jtreminio/php:7.1 \
