@@ -4,7 +4,7 @@ LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 
-SHELL ["/bin/bash", "-c"]
+RUN update-alternatives --install /bin/sh sh /bin/bash 100
 
 COPY files/ondrej.pgp /root/ondrej.pgp
 
