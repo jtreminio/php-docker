@@ -34,6 +34,7 @@ ENV PHP_LIB_DIR 20180606
 ENV DEL_LIB_PHP_DIR /usr/lib/php/20131226 \
                     /usr/lib/php/20151012 \
                     /usr/lib/php/20160303 \
+                    /usr/lib/php/20170718 \
                     /usr/lib/php/7.2 \
                     /usr/lib/php/${PHP_VER}
 # Deletable extra directories that may be created by installing PHP modules
@@ -61,6 +62,7 @@ RUN apt-get update &&\
         \
         php${PHP_VER}-amqp \
         php${PHP_VER}-apcu \
+        php${PHP_VER}-apcu-bc \
         php${PHP_VER}-gd \
         php${PHP_VER}-geoip \
         php${PHP_VER}-gnupg \
@@ -134,6 +136,8 @@ RUN rm -f \
         /etc/php/${PHP_VER}/fpm/conf.d/20-amqp.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-apcu.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/20-apcu.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/25-apcu_bc.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/25-apcu_bc.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-gd.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/20-gd.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-geoip.ini \
@@ -181,6 +185,7 @@ RUN rm -f \
         /etc/php/extra-mods \
         /etc/php/extra-mods/amqp \
         /etc/php/extra-mods/apcu \
+        /etc/php/extra-mods/apcu_bc \
         /etc/php/extra-mods/gd \
         /etc/php/extra-mods/geoip \
         /etc/php/extra-mods/gnupg \
@@ -205,6 +210,7 @@ RUN rm -f \
     \
     mv /etc/php/${PHP_VER}/mods-available/amqp.ini           /etc/php/extra-mods/amqp/ &&\
     mv /etc/php/${PHP_VER}/mods-available/apcu.ini           /etc/php/extra-mods/apcu/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/apcu_bc.ini        /etc/php/extra-mods/apcu_bc/ &&\
     mv /etc/php/${PHP_VER}/mods-available/gd.ini             /etc/php/extra-mods/gd/ &&\
     mv /etc/php/${PHP_VER}/mods-available/geoip.ini          /etc/php/extra-mods/geoip/ &&\
     mv /etc/php/${PHP_VER}/mods-available/gnupg.ini          /etc/php/extra-mods/gnupg/ &&\
@@ -230,6 +236,7 @@ RUN rm -f \
     install -d -m 0755 -o www-data -g www-data /p &&\
     ln -s /etc/php/extra-mods/amqp           /p/amqp &&\
     ln -s /etc/php/extra-mods/apcu           /p/apcu &&\
+    ln -s /etc/php/extra-mods/apcu_bc        /p/apcu_bc &&\
     ln -s /etc/php/extra-mods/gd             /p/gd &&\
     ln -s /etc/php/extra-mods/geoip          /p/geoip &&\
     ln -s /etc/php/extra-mods/gnupg          /p/gnupg &&\

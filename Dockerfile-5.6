@@ -34,6 +34,7 @@ ENV PHP_LIB_DIR 20131226
 ENV DEL_LIB_PHP_DIR /usr/lib/php/20151012 \
                     /usr/lib/php/20160303 \
                     /usr/lib/php/20170718 \
+                    /usr/lib/php/20180731 \
                     /usr/lib/php/${PHP_VER}
 # Deletable extra directories that may be created by installing PHP modules
 ENV DEL_PHP_DIR /etc/php/7.0 \
@@ -67,6 +68,7 @@ RUN apt-get update &&\
         php${PHP_VER}-imagick \
         php${PHP_VER}-lua \
         php${PHP_VER}-mailparse \
+        php${PHP_VER}-mcrypt \
         php${PHP_VER}-memcached \
         php${PHP_VER}-mongodb \
         php${PHP_VER}-oauth \
@@ -146,6 +148,8 @@ RUN rm -f \
         /etc/php/${PHP_VER}/fpm/conf.d/20-lua.ini \
         /etc/php/${PHP_VER}/cli/conf.d/25-mailparse.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/25-mailparse.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-mcrypt.ini \
+        /etc/php/${PHP_VER}/fpm/conf.d/20-mcrypt.ini \
         /etc/php/${PHP_VER}/cli/conf.d/25-memcached.ini \
         /etc/php/${PHP_VER}/fpm/conf.d/25-memcached.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-mongodb.ini \
@@ -189,6 +193,7 @@ RUN rm -f \
         /etc/php/extra-mods/imagick \
         /etc/php/extra-mods/lua \
         /etc/php/extra-mods/mailparse \
+        /etc/php/extra-mods/mcrypt \
         /etc/php/extra-mods/memcached \
         /etc/php/extra-mods/mongodb \
         /etc/php/extra-mods/oauth \
@@ -214,6 +219,7 @@ RUN rm -f \
     mv /etc/php/${PHP_VER}/mods-available/imagick.ini        /etc/php/extra-mods/imagick/ &&\
     mv /etc/php/${PHP_VER}/mods-available/lua.ini            /etc/php/extra-mods/lua/ &&\
     mv /etc/php/${PHP_VER}/mods-available/mailparse.ini      /etc/php/extra-mods/mailparse/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/mcrypt.ini         /etc/php/extra-mods/mcrypt/ &&\
     mv /etc/php/${PHP_VER}/mods-available/memcached.ini      /etc/php/extra-mods/memcached/ &&\
     mv /etc/php/${PHP_VER}/mods-available/mongodb.ini        /etc/php/extra-mods/mongodb/ &&\
     mv /etc/php/${PHP_VER}/mods-available/oauth.ini          /etc/php/extra-mods/oauth/ &&\
@@ -240,6 +246,7 @@ RUN rm -f \
     ln -s /etc/php/extra-mods/imagick        /p/imagick &&\
     ln -s /etc/php/extra-mods/lua            /p/lua &&\
     ln -s /etc/php/extra-mods/mailparse      /p/mailparse &&\
+    ln -s /etc/php/extra-mods/mcrypt         /p/mcrypt &&\
     ln -s /etc/php/extra-mods/memcached      /p/memcached &&\
     ln -s /etc/php/extra-mods/mongodb        /p/mongodb &&\
     ln -s /etc/php/extra-mods/oauth          /p/oauth &&\

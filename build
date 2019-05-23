@@ -1,13 +1,9 @@
-#!/usr/bin/env bash
-set -e
-set -o pipefail
-
 docker image build \
     -t jtreminio/phpenv:latest \
     -f Dockerfile-env \
     .
 
-PHP73="7.3.3"
+PHP73="7.3.5"
 docker image build \
   -t jtreminio/php:7.3 \
   -t jtreminio/php:${PHP73} \
@@ -15,7 +11,7 @@ docker image build \
   -f Dockerfile-7.3 \
   .
 
-PHP72="7.2.16"
+PHP72="7.2.18"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP72} \
   -t jtreminio/php:7.2 \
@@ -23,7 +19,7 @@ docker image build \
   -f Dockerfile-7.2 \
   .
 
-PHP71="7.1.27"
+PHP71="7.1.29"
 docker image build \
   --build-arg PHP_VER_DOT=${PHP71} \
   -t jtreminio/php:7.1 \
@@ -67,4 +63,3 @@ docker image push jtreminio/php:${PHP70}
 
 docker image push jtreminio/php:5.6
 docker image push jtreminio/php:${PHP56}
-EOF
