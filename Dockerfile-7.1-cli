@@ -1,4 +1,4 @@
-FROM jtreminio/phpenv-cli:latest
+FROM jtreminio/phpenv:latest
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,21 +26,21 @@ RUN apt-get update &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
 
 ENV COMPOSER_HOME /.composer
-ENV PHP_VER 7.3
+ENV PHP_VER 7.1
 ARG PHP_VER_DOT
-ENV PHP_LIB_DIR 20180606
+ENV PHP_LIB_DIR 20160303
 
 # Deletable dupe module directories not required by this version
 ENV DEL_LIB_PHP_DIR /usr/lib/php/20131226 \
                     /usr/lib/php/20151012 \
-                    /usr/lib/php/20160303 \
-                    /usr/lib/php/7.2 \
+                    /usr/lib/php/20170718 \
+                    /usr/lib/php/20180731 \
                     /usr/lib/php/${PHP_VER}
 # Deletable extra directories that may be created by installing PHP modules
 ENV DEL_PHP_DIR /etc/php/5.6 \
                 /etc/php/7.0 \
-                /etc/php/7.1 \
-                /etc/php/7.2
+                /etc/php/7.2 \
+                /etc/php/7.3
 
 # Most common PHP modules, and Composer
 # First group of modules are enabled by default
@@ -60,12 +60,15 @@ RUN apt-get update &&\
         \
         php${PHP_VER}-amqp \
         php${PHP_VER}-apcu \
+        php${PHP_VER}-apcu-bc \
         php${PHP_VER}-gd \
         php${PHP_VER}-geoip \
         php${PHP_VER}-gnupg \
         php${PHP_VER}-igbinary \
         php${PHP_VER}-imagick \
+        php${PHP_VER}-lua \
         php${PHP_VER}-mailparse \
+        php${PHP_VER}-mcrypt \
         php${PHP_VER}-memcached \
         php${PHP_VER}-mongodb \
         php${PHP_VER}-oauth \
@@ -73,6 +76,7 @@ RUN apt-get update &&\
         php${PHP_VER}-raphf \
         php${PHP_VER}-redis \
         php${PHP_VER}-soap \
+        php${PHP_VER}-sodium \
         php${PHP_VER}-solr \
         php${PHP_VER}-sqlite3 \
         php${PHP_VER}-ssh2 \
@@ -82,28 +86,26 @@ RUN apt-get update &&\
         php${PHP_VER}-zmq \
         php-xdebug &&\
     apt-get -y --purge autoremove &&\
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
-
-# Delete directories belonging to other PHP versions
-RUN rm -rf ${DEL_LIB_PHP_DIR} \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc} &&\
+    rm -rf ${DEL_LIB_PHP_DIR} \
            ${DEL_PHP_DIR}
 
 # Install Composer
-RUN install -d -m 0775 -o www-data -g www-data /.composer &&\
+RUN install -d -m 0755 -o www-data -g www-data /.composer &&\
     curl -sS https://getcomposer.org/installer | \
         php -- --install-dir=/usr/local/bin \
                --filename=composer &&\
     chown -R www-data:www-data /.composer
 
-# Save INI files into non-versioned directory
+# Save INI conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
-COPY files/php.ini /etc/php/php.ini
+COPY files/php.ini  /etc/php/php.ini
 
 # Use the following to mount your custom INI files as Volumes
 COPY files/blank.ini /etc/php/cli-custom.ini
 COPY files/blank.ini /etc/php/php-custom.ini
 
-# Set up PID and sessions directories
+# Set up sessions directory
 RUN install -d -m 0755 -o www-data -g www-data \
     /var/lib/php/sessions
 
@@ -124,11 +126,14 @@ RUN ln -s /etc/php/${PHP_VER}/cli/conf.d /etc/php/cli-conf.d &&\
 RUN rm -f \
         /etc/php/${PHP_VER}/cli/conf.d/20-amqp.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-apcu.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/25-apcu_bc.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-gd.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-geoip.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-gnupg.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-imagick.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-lua.ini \
         /etc/php/${PHP_VER}/cli/conf.d/25-mailparse.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-mcrypt.ini \
         /etc/php/${PHP_VER}/cli/conf.d/25-memcached.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-mongodb.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-oauth.ini \
@@ -137,6 +142,7 @@ RUN rm -f \
         /etc/php/${PHP_VER}/cli/conf.d/20-raphf.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-redis.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-soap.ini \
+        /etc/php/${PHP_VER}/cli/conf.d/20-sodium.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-solr.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-sqlite3.ini \
         /etc/php/${PHP_VER}/cli/conf.d/20-ssh2.ini \
@@ -150,11 +156,14 @@ RUN rm -f \
         /etc/php/extra-mods \
         /etc/php/extra-mods/amqp \
         /etc/php/extra-mods/apcu \
+        /etc/php/extra-mods/apcu_bc \
         /etc/php/extra-mods/gd \
         /etc/php/extra-mods/geoip \
         /etc/php/extra-mods/gnupg \
         /etc/php/extra-mods/imagick \
+        /etc/php/extra-mods/lua \
         /etc/php/extra-mods/mailparse \
+        /etc/php/extra-mods/mcrypt \
         /etc/php/extra-mods/memcached \
         /etc/php/extra-mods/mongodb \
         /etc/php/extra-mods/oauth \
@@ -163,6 +172,7 @@ RUN rm -f \
         /etc/php/extra-mods/raphf \
         /etc/php/extra-mods/redis \
         /etc/php/extra-mods/soap \
+        /etc/php/extra-mods/sodium \
         /etc/php/extra-mods/solr \
         /etc/php/extra-mods/sqlite3 \
         /etc/php/extra-mods/ssh2 \
@@ -174,11 +184,14 @@ RUN rm -f \
     \
     mv /etc/php/${PHP_VER}/mods-available/amqp.ini           /etc/php/extra-mods/amqp/ &&\
     mv /etc/php/${PHP_VER}/mods-available/apcu.ini           /etc/php/extra-mods/apcu/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/apcu_bc.ini        /etc/php/extra-mods/apcu_bc/ &&\
     mv /etc/php/${PHP_VER}/mods-available/gd.ini             /etc/php/extra-mods/gd/ &&\
     mv /etc/php/${PHP_VER}/mods-available/geoip.ini          /etc/php/extra-mods/geoip/ &&\
     mv /etc/php/${PHP_VER}/mods-available/gnupg.ini          /etc/php/extra-mods/gnupg/ &&\
     mv /etc/php/${PHP_VER}/mods-available/imagick.ini        /etc/php/extra-mods/imagick/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/lua.ini            /etc/php/extra-mods/lua/ &&\
     mv /etc/php/${PHP_VER}/mods-available/mailparse.ini      /etc/php/extra-mods/mailparse/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/mcrypt.ini         /etc/php/extra-mods/mcrypt/ &&\
     mv /etc/php/${PHP_VER}/mods-available/memcached.ini      /etc/php/extra-mods/memcached/ &&\
     mv /etc/php/${PHP_VER}/mods-available/mongodb.ini        /etc/php/extra-mods/mongodb/ &&\
     mv /etc/php/${PHP_VER}/mods-available/oauth.ini          /etc/php/extra-mods/oauth/ &&\
@@ -187,6 +200,7 @@ RUN rm -f \
     mv /etc/php/${PHP_VER}/mods-available/raphf.ini          /etc/php/extra-mods/raphf/ &&\
     mv /etc/php/${PHP_VER}/mods-available/redis.ini          /etc/php/extra-mods/redis/ &&\
     mv /etc/php/${PHP_VER}/mods-available/soap.ini           /etc/php/extra-mods/soap/ &&\
+    mv /etc/php/${PHP_VER}/mods-available/sodium.ini         /etc/php/extra-mods/sodium/ &&\
     mv /etc/php/${PHP_VER}/mods-available/solr.ini           /etc/php/extra-mods/solr/ &&\
     mv /etc/php/${PHP_VER}/mods-available/sqlite3.ini        /etc/php/extra-mods/sqlite3/ &&\
     mv /etc/php/${PHP_VER}/mods-available/ssh2.ini           /etc/php/extra-mods/ssh2/ &&\
@@ -199,11 +213,14 @@ RUN rm -f \
     install -d -m 0755 -o www-data -g www-data /p &&\
     ln -s /etc/php/extra-mods/amqp           /p/amqp &&\
     ln -s /etc/php/extra-mods/apcu           /p/apcu &&\
+    ln -s /etc/php/extra-mods/apcu_bc        /p/apcu_bc &&\
     ln -s /etc/php/extra-mods/gd             /p/gd &&\
     ln -s /etc/php/extra-mods/geoip          /p/geoip &&\
     ln -s /etc/php/extra-mods/gnupg          /p/gnupg &&\
     ln -s /etc/php/extra-mods/imagick        /p/imagick &&\
+    ln -s /etc/php/extra-mods/lua            /p/lua &&\
     ln -s /etc/php/extra-mods/mailparse      /p/mailparse &&\
+    ln -s /etc/php/extra-mods/mcrypt         /p/mcrypt &&\
     ln -s /etc/php/extra-mods/memcached      /p/memcached &&\
     ln -s /etc/php/extra-mods/mongodb        /p/mongodb &&\
     ln -s /etc/php/extra-mods/oauth          /p/oauth &&\
@@ -212,6 +229,7 @@ RUN rm -f \
     ln -s /etc/php/extra-mods/raphf          /p/raphf &&\
     ln -s /etc/php/extra-mods/redis          /p/redis &&\
     ln -s /etc/php/extra-mods/soap           /p/soap &&\
+    ln -s /etc/php/extra-mods/sodium         /p/sodium &&\
     ln -s /etc/php/extra-mods/solr           /p/solr &&\
     ln -s /etc/php/extra-mods/sqlite3        /p/sqlite3 &&\
     ln -s /etc/php/extra-mods/ssh2           /p/ssh2 &&\
@@ -227,8 +245,6 @@ RUN rm -rf /etc/apache2
 COPY files/xdebug /usr/bin/xdebug
 RUN chmod +x /usr/bin/xdebug
 
-RUN install -d -m 0775 -o www-data -g www-data /var/www
+WORKDIR /etc/php/${PHP_VER}
 
-WORKDIR /var/www
-
-USER www-data
+CMD ["/sbin/my_init"]

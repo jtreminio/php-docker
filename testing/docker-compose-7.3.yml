@@ -20,7 +20,7 @@ services:
       - ${PWD}/testing/index.php:/var/www/index.php
       - ${PWD}/testing/vhost.conf:/etc/nginx/conf.d/default.conf
   php:
-    image: jtreminio/php:7.3
+    image: ${FPM_IMAGE:-jtreminio/php-fpm:7.3}
     networks:
       - private
     volumes:
@@ -41,7 +41,7 @@ services:
       - ${PWD}/testing/index.php:/var/www/index.php
       - ${PWD}/testing/vhost-de.conf:/etc/nginx/conf.d/default.conf
   php-de:
-    image: jtreminio/php:7.3
+    image: ${FPM_IMAGE:-jtreminio/php-fpm:7.3}
     environment:
       - PHP__display_errors=1
     networks:
@@ -64,7 +64,7 @@ services:
       - ${PWD}/testing/index.php:/var/www/index.php
       - ${PWD}/testing/vhost-xdebug.conf:/etc/nginx/conf.d/default.conf
   php-xdebug:
-    image: jtreminio/php:7.3
+    image: ${FPM_IMAGE:-jtreminio/php-fpm:7.3}
     environment:
       - PHP_INI_SCAN_DIR=:/p/xdebug
       - PHP__xdebug__remote_host=custom.localhost

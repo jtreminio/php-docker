@@ -2,7 +2,8 @@
 set -o pipefail
 
 PHP_VERSION=${1}
-IMAGE=${2:-jtreminio/php:${PHP_VERSION}}
+CLI_IMAGE=${2:-jtreminio/php-cli:${PHP_VERSION}}
+FPM_IMAGE=${3:-jtreminio/php-fpm:${PHP_VERSION}}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 FAIL='\033[0;31m[FAIL]\033[0m\n'
 PASS='\033[0;32m[PASS]\033[0m\n'
@@ -26,7 +27,7 @@ fi
 
 run_fpm_container() {
     COMPOSE_PROJECT_NAME=jtreminio-testing \
-    docker-compose -f testing/docker-compose-${PHP_VERSION}.yml up -d
+    FPM_IMAGE=${FPM_IMAGE} docker-compose -f testing/docker-compose-${PHP_VERSION}.yml up -d
 }
 
 rm_fpm_container() {
@@ -34,7 +35,7 @@ rm_fpm_container() {
     docker-compose -f testing/docker-compose-${PHP_VERSION}.yml down -t 1
 }
 
-printf "Testing ${IMAGE}\n\n"
+printf "Testing ${CLI_IMAGE} and ${FPM_IMAGE}\n\n"
 
 run_fpm_container
 
@@ -46,7 +47,7 @@ printf "[CLI] Check version correct"
 EXPECTS="PHP ${PHP_VERSION}"
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "php -v"
+  ${CLI_IMAGE} bash -c "php -v"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -75,7 +76,7 @@ printf "[CLI] Check custom INI loaded"
 EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/98-env.ini"
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "php --ini"
+  ${CLI_IMAGE} bash -c "php --ini"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -86,7 +87,7 @@ else
 fi
 
 printf "[FPM] Check custom INI loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/98-env.ini"
+EXPECTS="/etc/php/fpm-conf.d/98-env.ini"
 CMD=$(cat << EOF
 curl -s jtreminio-testing.localhost/index.php
 EOF
@@ -104,7 +105,7 @@ printf "[CLI] Check FPM INI not loaded"
 EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/98-env.ini"
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "php --ini"
+  ${CLI_IMAGE} bash -c "php --ini"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -133,7 +134,7 @@ printf "[CLI] Check display_errors set to default value"
 EXPECTS='display_errors => Off => Off'
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "php -i"
+  ${CLI_IMAGE} bash -c "php -i"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -163,7 +164,7 @@ EXPECTS='display_errors => STDOUT => STDOUT'
 CMD=$(cat << EOF
 docker container run --rm \
   -e PHP__display_errors=1 \
-  ${IMAGE} bash -c "php -i"
+  ${CLI_IMAGE} bash -c "php -i"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -192,7 +193,7 @@ printf "[CLI] Check Xdebug not loaded by default"
 EXPECTS='with Xdebug'
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "php -v"
+  ${CLI_IMAGE} bash -c "php -v"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -222,7 +223,7 @@ EXPECTS='with Xdebug'
 CMD=$(cat << EOF
 docker container run --rm \
   -e PHP_INI_SCAN_DIR=:/p/xdebug \
-  ${IMAGE} bash -c "php -v"
+  ${CLI_IMAGE} bash -c "php -v"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -252,7 +253,7 @@ EXPECTS='xdebug.remote_host => host.docker.internal => host.docker.internal'
 CMD=$(cat << EOF
 docker container run --rm \
   -e PHP_INI_SCAN_DIR=:/p/xdebug \
-  ${IMAGE} bash -c "php -i"
+  ${CLI_IMAGE} bash -c "php -i"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -270,7 +271,7 @@ CMD=$(cat << EOF
 docker container run --rm \
   -e PHP_INI_SCAN_DIR=:/p/xdebug \
   -e PHP__xdebug__remote_host=custom.localhost \
-  ${IMAGE} bash -c "php -i"
+  ${CLI_IMAGE} bash -c "php -i"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -299,7 +300,7 @@ printf "[CLI] Check Xdebug CLI auto-sets PHP_INI_SCAN_DIR"
 EXPECTS='/p/xdebug/xdebug.ini'
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "/usr/bin/xdebug --ini"
+  ${CLI_IMAGE} bash -c "/usr/bin/xdebug --ini"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -315,7 +316,7 @@ printf "[CLI] Check custom INI loaded"
 EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini"
 CMD=$(cat << EOF
 docker container run --rm \
-  ${IMAGE} bash -c "php --ini"
+  ${CLI_IMAGE} bash -c "php --ini"
 EOF
 )
 RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
@@ -326,7 +327,7 @@ else
 fi
 
 printf "[FPM] Check custom INI loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini"
+EXPECTS="/etc/php/fpm-conf.d/99-custom.ini"
 CMD=$(cat << EOF
 curl -s jtreminio-testing.localhost/index.php
 EOF

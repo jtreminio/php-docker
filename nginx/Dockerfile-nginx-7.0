@@ -1,4 +1,4 @@
-FROM jtreminio/php:7.0
+FROM jtreminio/php-fpm:7.0
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
 RUN printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/nginx/ubuntu bionic main\n" \
