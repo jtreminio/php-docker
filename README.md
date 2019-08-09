@@ -103,7 +103,7 @@ You can set a large number of PHP INI settings using environment variables.
 vs
 
     docker container run -it --rm \
-        -e PHP.display_errors=1 \
+        -e PHP__display_errors=1 \
         jtreminio/php:7.2 php -i | grep display_errors
     
     100:display_errors => STDOUT => STDOUT
@@ -191,7 +191,7 @@ You must either pass your host IP directly, or use a gateway. I have found `172.
 
     docker container run -it --rm \
         -e PHP_INI_SCAN_DIR=:/p/xdebug \
-        -e PHP.xdebug.remote_host=172.17.0.1 \
+        -e PHP__xdebug__remote_host=172.17.0.1 \
         jtreminio/php:7.2 php -i | grep xdebug.remote_host
     
     860:xdebug.remote_host => 127.0.0.1 => 127.0.0.1

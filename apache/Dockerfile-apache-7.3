@@ -34,7 +34,7 @@ RUN chmod +x /etc/service/fpm-xdebug/run &&\
 ENV VHOST=fpm
 
 # Replace 0.0.0.0:9000
-ENV FPM.listen="127.0.0.1:9000"
+ENV FPM__listen="127.0.0.1:9000"
 
 EXPOSE 8080
 

@@ -189,8 +189,8 @@ You can pass PHP INI settings like so:
         volumes:
           - ${PWD}/index.php:/var/www/index.php
         environment:
-          - PHP.display_errors=On
-          - PHP.error_reporting=-1
+          - PHP__display_errors=On
+          - PHP__error_reporting=-1
 
 If you want to enable Xdebug support you must also pass `PHPFPM_XDEBUG`:
 
@@ -212,8 +212,8 @@ If you want to enable Xdebug support you must also pass `PHPFPM_XDEBUG`:
         volumes:
           - ${PWD}/index.php:/var/www/index.php
         environment:
-          - PHP.display_errors=On
-          - PHP.error_reporting=-1
+          - PHP__display_errors=On
+          - PHP__error_reporting=-1
           - PHPFPM_XDEBUG=On
 
 You can easily switch vhost configs by using `VHOST`:
@@ -236,8 +236,8 @@ You can easily switch vhost configs by using `VHOST`:
         volumes:
           - ${PWD}/index.php:/var/www/index.php
         environment:
-          - PHP.display_errors=On
-          - PHP.error_reporting=-1
+          - PHP__display_errors=On
+          - PHP__error_reporting=-1
           - PHPFPM_XDEBUG=On
           - VHOST=symfony2
 
@@ -262,8 +262,8 @@ Or, you can easily use a custom vhost config:
           - ${PWD}/index.php:/var/www/index.php
           - ${PWD}/vhost.conf:/etc/nginx/sites-enabled/default
         environment:
-          - PHP.display_errors=On
-          - PHP.error_reporting=-1
+          - PHP__display_errors=On
+          - PHP__error_reporting=-1
           - PHPFPM_XDEBUG=On
 
 You would need to create an `index.php` file at the same location as your `docker-compose.yml` file.

@@ -162,7 +162,7 @@ printf "[CLI] Check display_errors accepts override value"
 EXPECTS='display_errors => STDOUT => STDOUT'
 CMD=$(cat << EOF
 docker container run --rm \
-  -e PHP.display_errors=1 \
+  -e PHP__display_errors=1 \
   ${IMAGE} bash -c "php -i"
 EOF
 )
@@ -269,7 +269,7 @@ EXPECTS='xdebug.remote_host => custom.localhost => custom.localhost'
 CMD=$(cat << EOF
 docker container run --rm \
   -e PHP_INI_SCAN_DIR=:/p/xdebug \
-  -e PHP.xdebug.remote_host=custom.localhost \
+  -e PHP__xdebug__remote_host=custom.localhost \
   ${IMAGE} bash -c "php -i"
 EOF
 )

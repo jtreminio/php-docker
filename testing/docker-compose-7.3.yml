@@ -43,7 +43,7 @@ services:
   php-de:
     image: jtreminio/php:7.3
     environment:
-      - PHP.display_errors=1
+      - PHP__display_errors=1
     networks:
       - private
     volumes:
@@ -67,7 +67,7 @@ services:
     image: jtreminio/php:7.3
     environment:
       - PHP_INI_SCAN_DIR=:/p/xdebug
-      - PHP.xdebug.remote_host=custom.localhost
+      - PHP__xdebug__remote_host=custom.localhost
     networks:
       - private
     volumes:

@@ -30,8 +30,8 @@ fi
 export PHP_INI_SCAN_DIR
 
 exec /usr/sbin/php-fpm \
-            -d FPM.pid="/var/run/php-fpm/php-fpm-xdebug.pid" \
-            -d FPM.listen="127.0.0.1:9999" \
+            -d FPM__pid="/var/run/php-fpm/php-fpm-xdebug.pid" \
+            -d FPM__listen="127.0.0.1:9999" \
             --nodaemonize \
             --force-stderr 2>&1 | \
         sed -u 's,.*: \"\(.*\)$,\1,'| \
