@@ -4,7 +4,6 @@
 * `jtreminio/php:7.2` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2))
 * `jtreminio/php:7.1` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1))
 * `jtreminio/php:7.0` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0))
-* `jtreminio/php:5.6` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6))
 
 [All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php/tags/)
 
@@ -116,7 +115,6 @@ Many modules are installed and enabled by default:
 * [Enabled Modules for 7.2](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2#L47)
 * [Enabled Modules for 7.1](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1#L47)
 * [Enabled Modules for 7.0](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0#L47)
-* [Enabled Modules for 5.6](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6#L47)
 
 Many modules are installed by _not_ enabled by default:
 
@@ -124,7 +122,6 @@ Many modules are installed by _not_ enabled by default:
 * [Installed, not Enabled Modules for 7.2](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.2#L59)
 * [Installed, not Enabled Modules for 7.1](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.1#L59)
 * [Installed, not Enabled Modules for 7.0](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-7.0#L59)
-* [Installed, not Enabled Modules for 5.6](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-5.6#L59)
 
 You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special shortcut has been created to more easily add modules:
 
