@@ -1,65 +1,206 @@
-docker image build \
-    -t jtreminio/phpenv:latest \
-    -f Dockerfile-env \
-    .
+#!/usr/bin/env bash
 
-PHP73="7.3.5"
-docker image build \
-  -t jtreminio/php:7.3 \
-  -t jtreminio/php:${PHP73} \
-  -t jtreminio/php:latest \
-  -f Dockerfile-7.3 \
-  .
-
-PHP72="7.2.18"
-docker image build \
-  --build-arg PHP_VER_DOT=${PHP72} \
-  -t jtreminio/php:7.2 \
-  -t jtreminio/php:${PHP72} \
-  -f Dockerfile-7.2 \
-  .
-
-PHP71="7.1.29"
-docker image build \
-  --build-arg PHP_VER_DOT=${PHP71} \
-  -t jtreminio/php:7.1 \
-  -t jtreminio/php:${PHP71} \
-  -f Dockerfile-7.1 \
-  .
-
+PHP74="7.4.0"
+PHP73="7.3.12"
+PHP72="7.2.25"
+PHP71="7.1.33"
 PHP70="7.0.33"
-docker image build \
-  --build-arg PHP_VER_DOT=${PHP70} \
-  -t jtreminio/php:7.0 \
-  -t jtreminio/php:${PHP70} \
-  -f Dockerfile-7.0 \
-  .
 
-PHP56="5.6.40"
-docker image build \
-  --build-arg PHP_VER_DOT=${PHP56} \
-  -t jtreminio/php:5.6 \
-  -t jtreminio/php:${PHP56} \
-  -f Dockerfile-5.6 \
-  .
+function main() {
+    build_env_image
 
-cat << EOF
+    build_php_cli_image 7.4 ${PHP74} 1
+    build_php_cli_image 7.3 ${PHP73}
+    build_php_cli_image 7.2 ${PHP72}
+    build_php_cli_image 7.1 ${PHP71}
+    build_php_cli_image 7.0 ${PHP70}
+
+    build_php_fpm_image 7.4 ${PHP74} 1
+    build_php_fpm_image 7.3 ${PHP73}
+    build_php_fpm_image 7.2 ${PHP72}
+    build_php_fpm_image 7.1 ${PHP71}
+    build_php_fpm_image 7.0 ${PHP70}
+
+    build_apache_image 7.4 ${PHP74} 1
+    build_apache_image 7.3 ${PHP73}
+    build_apache_image 7.2 ${PHP72}
+    build_apache_image 7.1 ${PHP71}
+    build_apache_image 7.0 ${PHP70}
+
+    build_nginx_image 7.4 ${PHP74} 1
+    build_nginx_image 7.3 ${PHP73}
+    build_nginx_image 7.2 ${PHP72}
+    build_nginx_image 7.1 ${PHP71}
+    build_nginx_image 7.0 ${PHP70}
+
+    cat << EOF
 Push to Docker Hub with:
 
 docker image push jtreminio/phpenv:latest
 
+docker image push jtreminio/php-cli:latest
+docker image push jtreminio/php-cli:7.4
+docker image push jtreminio/php-cli:${PHP74}
+docker image push jtreminio/php-cli:7.3
+docker image push jtreminio/php-cli:${PHP73}
+docker image push jtreminio/php-cli:7.2
+docker image push jtreminio/php-cli:${PHP72}
+docker image push jtreminio/php-cli:7.1
+docker image push jtreminio/php-cli:${PHP71}
+docker image push jtreminio/php-cli:7.0
+docker image push jtreminio/php-cli:${PHP70}
+
+docker image push jtreminio/php:latest
+docker image push jtreminio/php:7.4
+docker image push jtreminio/php:${PHP74}
 docker image push jtreminio/php:7.3
 docker image push jtreminio/php:${PHP73}
-docker image push jtreminio/php:latest
-
 docker image push jtreminio/php:7.2
 docker image push jtreminio/php:${PHP72}
-
 docker image push jtreminio/php:7.1
 docker image push jtreminio/php:${PHP71}
-
 docker image push jtreminio/php:7.0
 docker image push jtreminio/php:${PHP70}
 
-docker image push jtreminio/php:5.6
-docker image push jtreminio/php:${PHP56}
+docker image push jtreminio/php-apache:latest
+docker image push jtreminio/php-apache:7.4
+docker image push jtreminio/php-apache:${PHP74}
+docker image push jtreminio/php-apache:7.3
+docker image push jtreminio/php-apache:${PHP73}
+docker image push jtreminio/php-apache:7.2
+docker image push jtreminio/php-apache:${PHP72}
+docker image push jtreminio/php-apache:7.1
+docker image push jtreminio/php-apache:${PHP71}
+docker image push jtreminio/php-apache:7.0
+docker image push jtreminio/php-apache:${PHP70}
+
+docker image push jtreminio/php-nginx:latest
+docker image push jtreminio/php-nginx:7.4
+docker image push jtreminio/php-nginx:${PHP74}
+docker image push jtreminio/php-nginx:7.3
+docker image push jtreminio/php-nginx:${PHP73}
+docker image push jtreminio/php-nginx:7.2
+docker image push jtreminio/php-nginx:${PHP72}
+docker image push jtreminio/php-nginx:7.1
+docker image push jtreminio/php-nginx:${PHP71}
+docker image push jtreminio/php-nginx:7.0
+docker image push jtreminio/php-nginx:${PHP70}
+EOF
+}
+
+function build_env_image() {
+    echo "Building ENV"
+    docker image build \
+      -t jtreminio/env:latest \
+      -f Dockerfile-env \
+      .
+
+    if [[ $? -ne 0 ]]; then
+        echo "Error encountered"
+        exit 1
+    fi
+}
+
+function build_php_cli_image() {
+    PHP_MAJOR="${1}"
+    PHP_MINOR="${2}"
+    IS_LATEST="${3:-0}"
+
+    LATEST_TAG=""
+    if [[ ${IS_LATEST} -eq 1 ]]; then
+        LATEST_TAG="-t jtreminio/php-cli:latest"
+    fi
+
+    echo "Building PHP-CLI ${PHP_MINOR}"
+    docker image build \
+      --build-arg PHP_VER=${PHP_MAJOR} \
+      --build-arg PHP_VER_DOT=${PHP_MINOR} \
+      -t jtreminio/php-cli:${PHP_MAJOR} \
+      -t jtreminio/php-cli:${PHP_MINOR} \
+      ${LATEST_TAG} \
+      -f Dockerfile-php-cli \
+      .
+
+    if [[ $? -ne 0 ]]; then
+        echo "Error encountered"
+        exit 1
+    fi
+}
+
+function build_php_fpm_image() {
+    PHP_MAJOR="${1}"
+    PHP_MINOR="${2}"
+    IS_LATEST="${3:-0}"
+
+    LATEST_TAG=""
+    if [[ ${IS_LATEST} -eq 1 ]]; then
+        LATEST_TAG="-t jtreminio/php:latest"
+    fi
+
+    echo "Building PHP-CLI + PHP-FPM ${PHP_MINOR}"
+    docker image build \
+      --build-arg PHP_VER=${PHP_MAJOR} \
+      --build-arg PHP_VER_DOT=${PHP_MINOR} \
+      -t jtreminio/php:${PHP_MAJOR} \
+      -t jtreminio/php:${PHP_MINOR} \
+      ${LATEST_TAG} \
+      -f Dockerfile-php-fpm \
+      .
+
+    if [[ $? -ne 0 ]]; then
+        echo "Error encountered"
+        exit 1
+    fi
+}
+
+function build_apache_image() {
+    PHP_MAJOR="${1}"
+    PHP_MINOR="${2}"
+    IS_LATEST="${3:-0}"
+
+    LATEST_TAG=""
+    if [[ ${IS_LATEST} -eq 1 ]]; then
+        LATEST_TAG="-t jtreminio/php-apache:latest"
+    fi
+
+    echo "Building PHP ${PHP_MAJOR} + Apache"
+    docker image build \
+      --build-arg PHP_VER_DOT=${PHP_MINOR} \
+      -t jtreminio/php-apache:${PHP_MAJOR} \
+      -t jtreminio/php-apache:${PHP_MINOR} \
+      ${LATEST_TAG} \
+      -f Dockerfile-apache \
+      .
+
+    if [[ $? -ne 0 ]]; then
+        echo "Error encountered"
+        exit 1
+    fi
+}
+
+function build_nginx_image() {
+    PHP_MAJOR="${1}"
+    PHP_MINOR="${2}"
+    IS_LATEST="${3:-0}"
+
+    LATEST_TAG=""
+    if [[ ${IS_LATEST} -eq 1 ]]; then
+        LATEST_TAG="-t jtreminio/php-nginx:latest"
+    fi
+
+    echo "Building PHP ${PHP_MAJOR} + Nginx"
+    docker image build \
+      --build-arg PHP_VER_DOT=${PHP_MINOR} \
+      -t jtreminio/php-nginx:${PHP_MAJOR} \
+      -t jtreminio/php-nginx:${PHP_MINOR} \
+      ${LATEST_TAG} \
+      -f Dockerfile-nginx \
+      .
+
+    if [[ $? -ne 0 ]]; then
+        echo "Error encountered"
+        exit 1
+    fi
+}
+
+main

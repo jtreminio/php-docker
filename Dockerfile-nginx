@@ -1,4 +1,5 @@
-FROM jtreminio/php:7.2
+ARG PHP_VER_DOT
+FROM jtreminio/php:$PHP_VER_DOT
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
 RUN printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/nginx/ubuntu bionic main\n" \
@@ -19,17 +20,17 @@ RUN chown -R www-data:www-data \
         /var/run/nginx &&\
     rm -rf /var/www/html
 
-COPY files/nginx.conf /etc/nginx/nginx.conf
-COPY files/vhost/* /etc/nginx/sites-available/
+COPY files/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY files/nginx/vhost/* /etc/nginx/sites-available/
 RUN rm -f /etc/nginx/sites-enabled/default
 
 # runit config
 RUN mkdir /etc/service/nginx
-COPY files/nginx /etc/service/nginx/run
+COPY files/nginx/nginx /etc/service/nginx/run
 RUN chmod +x /etc/service/nginx/run
 
 RUN mkdir /etc/service/fpm-xdebug
-COPY files/fpm-xdebug /etc/service/fpm-xdebug/run
+COPY files/php/fpm-xdebug /etc/service/fpm-xdebug/run
 RUN chmod +x /etc/service/fpm-xdebug/run &&\
     touch /var/log/fpm-xdebug-tail
 

@@ -1,4 +1,5 @@
-FROM jtreminio/php:7.2
+ARG PHP_VER_DOT
+FROM jtreminio/php:$PHP_VER_DOT
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
 RUN printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/apache2/ubuntu bionic main\n" \
@@ -16,17 +17,17 @@ RUN chown -R www-data:www-data \
         /var/www &&\
     rm -rf /var/www/html
 
-COPY files/ports.conf /etc/apache2/ports.conf
-COPY files/vhost/* /etc/apache2/sites-available/
+COPY files/apache/ports.conf /etc/apache2/ports.conf
+COPY files/apache/vhost/* /etc/apache2/sites-available/
 RUN rm -f /etc/apache2/sites-enabled/000-default.conf
 
 # runit config
 RUN mkdir /etc/service/apache
-COPY files/apache /etc/service/apache/run
+COPY files/apache/apache /etc/service/apache/run
 RUN chmod +x /etc/service/apache/run
 
 RUN mkdir /etc/service/fpm-xdebug
-COPY files/fpm-xdebug /etc/service/fpm-xdebug/run
+COPY files/php/fpm-xdebug /etc/service/fpm-xdebug/run
 RUN chmod +x /etc/service/fpm-xdebug/run &&\
     touch /var/log/fpm-xdebug-tail
 

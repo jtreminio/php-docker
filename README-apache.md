@@ -1,12 +1,16 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `jtreminio/php-apache:7.3` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/apache/Dockerfile-apache-7.3))
-* `jtreminio/php-apache:7.2` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/apache/Dockerfile-apache-7.2))
-* `jtreminio/php-apache:7.1` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/apache/Dockerfile-apache-7.1))
-* `jtreminio/php-apache:7.0` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/apache/Dockerfile-apache-7.0))
-* `jtreminio/php-apache:5.6` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/apache/Dockerfile-apache-5.6))
+* `jtreminio/php-apache:7.4`, `jtreminio/php-apache:latest`
+* `jtreminio/php-apache:7.3`
+* `jtreminio/php-apache:7.2`
+* `jtreminio/php-apache:7.1`
+* `jtreminio/php-apache:7.0`
 
-#### [This README best viewed on Github for formatting](https://github.com/jtreminio/php-docker/blob/master/apache/README.md)
+[All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php-apache/tags/)
+
+[Dockerfile can be found here.](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-apache)
+
+#### [This README best viewed on Github for formatting](https://github.com/jtreminio/php-docker/blob/master/README-apache.md)
 
 ## How to use this image
 
@@ -14,7 +18,7 @@
 
 These PHP-FPM + Apache images come several vhost configs baked in.
 
-[You can see the full list by going here](https://github.com/jtreminio/php-docker/tree/master/apache/files/vhost).
+[You can see the full list by going here](https://github.com/jtreminio/php-docker/tree/master/files/apache/vhost).
 
 You can choose what vhost to use by passing the `VHOST` environment variable:
 
@@ -137,7 +141,7 @@ The following example uses [Traefik](https://hub.docker.com/_/traefik/). First s
         --restart always \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         --volume /dev/null:/traefik.toml \
-        traefik --api --docker \
+        traefik:1.7 --api --docker \
             --docker.domain=docker.localhost --logLevel=DEBUG
 
 Then create a `docker-compose.yml` that would look like this:

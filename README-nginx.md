@@ -1,12 +1,16 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `jtreminio/php-nginx:7.3` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.3))
-* `jtreminio/php-nginx:7.2` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.2))
-* `jtreminio/php-nginx:7.1` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.1))
-* `jtreminio/php-nginx:7.0` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-7.0))
-* `jtreminio/php-nginx:5.6` ([Dockerfile](https://github.com/jtreminio/php-docker/blob/master/nginx/Dockerfile-nginx-5.6))
+* `jtreminio/php-nginx:7.4`, `jtreminio/php-nginx:latest`
+* `jtreminio/php-nginx:7.3`
+* `jtreminio/php-nginx:7.2`
+* `jtreminio/php-nginx:7.1`
+* `jtreminio/php-nginx:7.0`
 
-#### [This README best viewed on Github for formatting](https://github.com/jtreminio/php-docker/blob/master/nginx/README.md)
+[All minor version tags can be found here.](https://hub.docker.com/r/jtreminio/php-nginx/tags/)
+
+[Dockerfile can be found here.](https://github.com/jtreminio/php-docker/blob/master/Dockerfile-nginx)
+
+#### [This README best viewed on Github for formatting](https://github.com/jtreminio/php-docker/blob/master/README-nginx.md)
 
 ## How to use this image
 
@@ -14,7 +18,7 @@
 
 These PHP-FPM + Nginx images come several vhost configs baked in.
 
-[You can see the full list by going here](https://github.com/jtreminio/php-docker/tree/master/nginx/files/vhost).
+[You can see the full list by going here](https://github.com/jtreminio/php-docker/tree/master/files/nginx/vhost).
 
 You can choose what vhost to use by passing the `VHOST` environment variable:
 
@@ -146,7 +150,7 @@ The following example uses [Traefik](https://hub.docker.com/_/traefik/). First s
         --restart always \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         --volume /dev/null:/traefik.toml \
-        traefik --api --docker \
+        traefik:1.7 --api --docker \
             --docker.domain=docker.localhost --logLevel=DEBUG
 
 Then create a `docker-compose.yml` that would look like this:
