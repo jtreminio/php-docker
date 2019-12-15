@@ -1,91 +1,97 @@
 #!/usr/bin/env bash
 
-PHP74="7.4.0"
-PHP73="7.3.12"
-PHP72="7.2.25"
-PHP71="7.1.33"
-PHP70="7.0.33"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# 7.4.0
+PHP_VERSION="${1}"
+# 7.4
+PHP_MAJOR=$(echo ${PHP_VERSION} | cut -d . -f -2)
+
+if [[ -z "${PHP_VERSION// }" ]]; then
+    cat << EOF
+Usage: build PHP_VERSION
+Builds CLI, FPM, Apache and Nginx images for PHP PHP_VERSION
+
+Example: build 7.4.0
+    Builds these images - jtreminio:php-cli
+                        - jtreminio:php
+                        - jtreminio:php-apache
+                        - jtreminio:php-nginx
+EOF
+fi
+
+if [[ ${PHP_VERSION} != "env" ]] && [[ "${PHP_VERSION// }" == "${PHP_MAJOR// }" ]]; then
+    printf "PHP_VERSION must be in 7.4.0 format"
+    exit 1
+fi
+
+REGEXP="([0-9]{1}\.)+([0-9]{1}\.)+([0-9]{1,2})"
+if [[ ${PHP_VERSION} != "env" ]] && ! [[ ${PHP_VERSION} =~ ${REGEXP} ]]; then
+    printf "PHP_VERSION must be in 7.4.0 format"
+    exit 1
+fi
+
+IS_LATEST=0
+if [[ ${PHP_MAJOR} == 7.4 ]]; then
+    IS_LATEST=1
+fi
 
 function main() {
-    build_env_image
+    if [[ PHP_VERSION == "env" ]]; then
+        build_env_image
 
-    build_php_cli_image 7.4 ${PHP74} 1
-    build_php_cli_image 7.3 ${PHP73}
-    build_php_cli_image 7.2 ${PHP72}
-    build_php_cli_image 7.1 ${PHP71}
-    build_php_cli_image 7.0 ${PHP70}
+        docker image push jtreminio/phpenv:latest
+        exit 0
+    fi
 
-    build_php_fpm_image 7.4 ${PHP74} 1
-    build_php_fpm_image 7.3 ${PHP73}
-    build_php_fpm_image 7.2 ${PHP72}
-    build_php_fpm_image 7.1 ${PHP71}
-    build_php_fpm_image 7.0 ${PHP70}
+    build_php_cli_image ${PHP_MAJOR} ${PHP_VERSION}
+    build_php_fpm_image ${PHP_MAJOR} ${PHP_VERSION}
+    build_apache_image ${PHP_MAJOR} ${PHP_VERSION}
+    build_nginx_image ${PHP_MAJOR} ${PHP_VERSION}
 
-    build_apache_image 7.4 ${PHP74} 1
-    build_apache_image 7.3 ${PHP73}
-    build_apache_image 7.2 ${PHP72}
-    build_apache_image 7.1 ${PHP71}
-    build_apache_image 7.0 ${PHP70}
+    bash "${DIR}/test" ${PHP_VERSION}
 
-    build_nginx_image 7.4 ${PHP74} 1
-    build_nginx_image 7.3 ${PHP73}
-    build_nginx_image 7.2 ${PHP72}
-    build_nginx_image 7.1 ${PHP71}
-    build_nginx_image 7.0 ${PHP70}
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+
+    docker image push jtreminio/php-cli:${PHP_MAJOR}
+    docker image push jtreminio/php-cli:${PHP_VERSION}
+    docker image push jtreminio/php:${PHP_MAJOR}
+    docker image push jtreminio/php:${PHP_VERSION}
+    docker image push jtreminio/php-apache:${PHP_MAJOR}
+    docker image push jtreminio/php-apache:${PHP_VERSION}
+    docker image push jtreminio/php-nginx:${PHP_MAJOR}
+    docker image push jtreminio/php-nginx:${PHP_VERSION}
+
+    if [[ ${IS_LATEST} -eq 1 ]]; then
+        docker image push jtreminio/php-cli:latest
+        docker image push jtreminio/php:latest
+        docker image push jtreminio/php-apache:latest
+        docker image push jtreminio/php-nginx:latest
+    fi
 
     cat << EOF
-Push to Docker Hub with:
+        The following images were built and pushed:
 
-docker image push jtreminio/phpenv:latest
-
-docker image push jtreminio/php-cli:latest
-docker image push jtreminio/php-cli:7.4
-docker image push jtreminio/php-cli:${PHP74}
-docker image push jtreminio/php-cli:7.3
-docker image push jtreminio/php-cli:${PHP73}
-docker image push jtreminio/php-cli:7.2
-docker image push jtreminio/php-cli:${PHP72}
-docker image push jtreminio/php-cli:7.1
-docker image push jtreminio/php-cli:${PHP71}
-docker image push jtreminio/php-cli:7.0
-docker image push jtreminio/php-cli:${PHP70}
-
-docker image push jtreminio/php:latest
-docker image push jtreminio/php:7.4
-docker image push jtreminio/php:${PHP74}
-docker image push jtreminio/php:7.3
-docker image push jtreminio/php:${PHP73}
-docker image push jtreminio/php:7.2
-docker image push jtreminio/php:${PHP72}
-docker image push jtreminio/php:7.1
-docker image push jtreminio/php:${PHP71}
-docker image push jtreminio/php:7.0
-docker image push jtreminio/php:${PHP70}
-
-docker image push jtreminio/php-apache:latest
-docker image push jtreminio/php-apache:7.4
-docker image push jtreminio/php-apache:${PHP74}
-docker image push jtreminio/php-apache:7.3
-docker image push jtreminio/php-apache:${PHP73}
-docker image push jtreminio/php-apache:7.2
-docker image push jtreminio/php-apache:${PHP72}
-docker image push jtreminio/php-apache:7.1
-docker image push jtreminio/php-apache:${PHP71}
-docker image push jtreminio/php-apache:7.0
-docker image push jtreminio/php-apache:${PHP70}
-
-docker image push jtreminio/php-nginx:latest
-docker image push jtreminio/php-nginx:7.4
-docker image push jtreminio/php-nginx:${PHP74}
-docker image push jtreminio/php-nginx:7.3
-docker image push jtreminio/php-nginx:${PHP73}
-docker image push jtreminio/php-nginx:7.2
-docker image push jtreminio/php-nginx:${PHP72}
-docker image push jtreminio/php-nginx:7.1
-docker image push jtreminio/php-nginx:${PHP71}
-docker image push jtreminio/php-nginx:7.0
-docker image push jtreminio/php-nginx:${PHP70}
+        jtreminio/php-cli:${PHP_MAJOR}
+        jtreminio/php-cli:${PHP_VERSION}
+        jtreminio/php:${PHP_MAJOR}
+        jtreminio/php:${PHP_VERSION}
+        jtreminio/php-apache:${PHP_MAJOR}
+        jtreminio/php-apache:${PHP_VERSION}
+        jtreminio/php-nginx:${PHP_MAJOR}
+        jtreminio/php-nginx:${PHP_VERSION}
 EOF
+
+    if [[ ${IS_LATEST} -eq 1 ]]; then
+        cat << EOF
+        docker image push jtreminio/php-cli:latest
+        docker image push jtreminio/php:latest
+        docker image push jtreminio/php-apache:latest
+        docker image push jtreminio/php-nginx:latest
+EOF
+    fi
 }
 
 function build_env_image() {
@@ -104,7 +110,6 @@ function build_env_image() {
 function build_php_cli_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
-    IS_LATEST="${3:-0}"
 
     LATEST_TAG=""
     if [[ ${IS_LATEST} -eq 1 ]]; then
@@ -130,7 +135,6 @@ function build_php_cli_image() {
 function build_php_fpm_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
-    IS_LATEST="${3:-0}"
 
     LATEST_TAG=""
     if [[ ${IS_LATEST} -eq 1 ]]; then
@@ -156,7 +160,6 @@ function build_php_fpm_image() {
 function build_apache_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
-    IS_LATEST="${3:-0}"
 
     LATEST_TAG=""
     if [[ ${IS_LATEST} -eq 1 ]]; then
@@ -181,7 +184,6 @@ function build_apache_image() {
 function build_nginx_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
-    IS_LATEST="${3:-0}"
 
     LATEST_TAG=""
     if [[ ${IS_LATEST} -eq 1 ]]; then

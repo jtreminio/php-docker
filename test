@@ -1,341 +1,261 @@
 #!/usr/bin/env bash
 set -o pipefail
 
-PHP_VERSION=${1}
-IMAGE=${2:-jtreminio/php:${PHP_VERSION}}
+PHP_VERSION="${1}"
+PHP_MAJOR=$(echo ${PHP_VERSION} | cut -d . -f -2)
+CLI="jtreminio/php-cli:${PHP_VERSION}"
+FPM="jtreminio/php:${PHP_VERSION}"
+APACHE="jtreminio/php-apache:${PHP_VERSION}"
+NGINX="jtreminio/php-nginx:${PHP_VERSION}"
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 FAIL='\033[0;31m[FAIL]\033[0m\n'
 PASS='\033[0;32m[PASS]\033[0m\n'
 
 if [[ -z "${PHP_VERSION// }" ]]; then
     cat << EOF
-Usage: test PHP_VERSION [IMAGE]
-Run tests against [IMAGE] Docker image
+Usage: test PHP_VERSION
+Run tests against all Docker images
 
-When IMAGE is not passed, defaults to jtreminio:{PHP_VERSION}
-
-Example: test 7.2
-    Runs tests against jtreminio:7.2
-
-Example: test 7.2 jtreminio/php:7.2.test
-    Runs tests against jtreminio/php:7.2.test
+Example: test 7.2.25
+    Runs tests against - jtreminio:php-cli:7.2.25
+                       - jtreminio:php:7.2.25
+                       - jtreminio:php-apache:7.2.25
+                       - jtreminio:php-nginx:7.2.25
 EOF
 
     exit 1
 fi
 
+###
+
+# Setup network
+create_test_network() {
+    NAME=jtreminio_testing
+    FOUND=$(docker network ls --filter name=${NAME} | grep -c ${NAME} || true)
+    if [[ ${FOUND} -eq 0 ]]; then
+        docker network create --driver bridge ${NAME} > /dev/null 2>&1
+    fi
+}
+
+rm_test_network() {
+    NAME=jtreminio_testing
+    FOUND=$(docker network ls --filter name=${NAME} | grep -c ${NAME} || true)
+    if [[ ${FOUND} -ne 0 ]]; then
+        docker network rm ${NAME} > /dev/null 2>&1
+    fi
+}
+
 run_fpm_container() {
-    COMPOSE_PROJECT_NAME=jtreminio-testing \
-    docker-compose -f testing/docker-compose-${PHP_VERSION}.yml up -d
+    ENVFLAG=""
+    if [[ ! -z "${1:-}" ]]; then
+        ENVFLAG="-e ${1}"
+    fi
+
+    docker container run --rm -d \
+        --name jtreminio_fpm_test \
+        --network jtreminio_testing \
+        -v ${DIR}/testing/index.php:/var/www/index.php \
+        ${ENVFLAG} \
+        ${FPM} \
+            bash -c '/usr/sbin/php-fpm -F' > /dev/null 2>&1
 }
 
 rm_fpm_container() {
-    COMPOSE_PROJECT_NAME=jtreminio-testing \
-    docker-compose -f testing/docker-compose-${PHP_VERSION}.yml down -t 1
+    NAME=jtreminio_fpm_test
+    FOUND=$(docker container ls --filter name=${NAME} | grep -c ${NAME} || true)
+    if [[ ${FOUND} -ne 0 ]]; then
+        docker container rm -f ${NAME} > /dev/null 2>&1
+    fi
 }
 
-printf "Testing ${IMAGE}\n\n"
+run_fcgi_container() {
+    SETTING="${1}"
 
-run_fpm_container
+    docker container run --rm \
+        --name jtreminio_test_runner \
+        --network jtreminio_testing \
+        jtreminio/test-runner \
+            /bin/sh -c "SCRIPT_FILENAME=/var/www/index.php \
+                        REQUEST_METHOD=GET \
+                        QUERY_STRING=\"setting=${SETTING}\" \
+                        cgi-fcgi -bind -connect jtreminio_fpm_test:9000"
+}
 
-sleep 2
+fail_if_0() {
+    RESULT="${1}"
+
+    if [[ ${RESULT} -eq 0 ]]; then
+        printf " ${FAIL}"
+        exit 1
+    else
+        printf " ${PASS}"
+    fi
+}
+
+fail_if_1() {
+    RESULT="${1}"
+
+    if [[ ${RESULT} -ne 0 ]]; then
+        printf " ${FAIL}"
+        exit 1
+    else
+        printf " ${PASS}"
+    fi
+}
+
+printf "Testing PHP ${PHP_MAJOR} / ${PHP_VERSION}\n\n"
+
+create_test_network
 
 ###
 
-printf "[CLI] Check version correct"
-EXPECTS="PHP ${PHP_VERSION}"
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "php -v"
-EOF
+printf "[CLI] Check version correct [${PHP_VERSION}]"
+EXPECTS=${PHP_VERSION}
+CMD=$(
+    docker container run --rm \
+        ${CLI} php -v
 )
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
-printf "[FPM] Check version correct"
-EXPECTS="PHP Version ${PHP_VERSION}"
-CMD=$(cat << EOF
-curl -s jtreminio-testing.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+printf "[FPM] Check version correct [${PHP_VERSION}]"
+EXPECTS=${PHP_VERSION}
+run_fpm_container
+CMD=$(run_fcgi_container version)
+rm_fpm_container
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 ###
 
 printf "[CLI] Check custom INI loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/98-env.ini"
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "php --ini"
-EOF
+EXPECTS="/etc/php/${PHP_MAJOR}/cli/conf.d/98-env.ini"
+CMD=$(
+    docker container run --rm \
+        ${CLI} php --ini
 )
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 printf "[FPM] Check custom INI loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/98-env.ini"
-CMD=$(cat << EOF
-curl -s jtreminio-testing.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+EXPECTS="/etc/php/${PHP_MAJOR}/fpm/conf.d/98-env.ini"
+run_fpm_container
+CMD=$(run_fcgi_container)
+rm_fpm_container
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 ###
 
 printf "[CLI] Check FPM INI not loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/98-env.ini"
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "php --ini"
-EOF
+EXPECTS="/etc/php/${PHP_MAJOR}/fpm/conf.d/98-env.ini"
+CMD=$(
+    docker container run --rm \
+        ${CLI} php --ini
 )
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 0 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+fail_if_1 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 printf "[FPM] Check CLI INI not loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/98-env.ini"
-CMD=$(cat << EOF
-curl -s jtreminio-testing.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 0 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check display_errors set to default value"
-EXPECTS='display_errors => Off => Off'
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "php -i"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-printf "[FPM] Check display_errors set to default value"
-EXPECTS='display_errors</td><td class="v">Off'
-CMD=$(cat << EOF
-curl -s jtreminio-testing.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check display_errors accepts override value"
-EXPECTS='display_errors => STDOUT => STDOUT'
-CMD=$(cat << EOF
-docker container run --rm \
-  -e PHP.display_errors=1 \
-  ${IMAGE} bash -c "php -i"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-printf "[FPM] Check display_errors accepts override value"
-EXPECTS='display_errors</td><td class="v">On'
-CMD=$(cat << EOF
-curl -s jtreminio-testing-de.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check Xdebug not loaded by default"
-EXPECTS='with Xdebug'
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "php -v"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 0 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-printf "[FPM] Check Xdebug not loaded by default"
-EXPECTS='with Xdebug'
-CMD=$(cat << EOF
-curl -s jtreminio-testing.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 0 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check Xdebug loaded by env var"
-EXPECTS='with Xdebug'
-CMD=$(cat << EOF
-docker container run --rm \
-  -e PHP_INI_SCAN_DIR=:/p/xdebug \
-  ${IMAGE} bash -c "php -v"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-printf "[FPM] Check Xdebug loaded by env var"
-EXPECTS='with&nbsp;Xdebug'
-CMD=$(cat << EOF
-curl -s jtreminio-testing-xdebug.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check xdebug.remote_host set to default value"
-EXPECTS='xdebug.remote_host => host.docker.internal => host.docker.internal'
-CMD=$(cat << EOF
-docker container run --rm \
-  -e PHP_INI_SCAN_DIR=:/p/xdebug \
-  ${IMAGE} bash -c "php -i"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check xdebug.remote_host accepts overriden value"
-EXPECTS='xdebug.remote_host => custom.localhost => custom.localhost'
-CMD=$(cat << EOF
-docker container run --rm \
-  -e PHP_INI_SCAN_DIR=:/p/xdebug \
-  -e PHP.xdebug.remote_host=custom.localhost \
-  ${IMAGE} bash -c "php -i"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-printf "[FPM] Check xdebug.remote_host accepts overriden value"
-EXPECTS='xdebug.remote_host</td><td class="v">custom.localhost'
-CMD=$(cat << EOF
-curl -s jtreminio-testing-xdebug.localhost/index.php
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
-
-###
-
-printf "[CLI] Check Xdebug CLI auto-sets PHP_INI_SCAN_DIR"
-EXPECTS='/p/xdebug/xdebug.ini'
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "/usr/bin/xdebug --ini"
-EOF
-)
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+EXPECTS="/etc/php/${PHP_MAJOR}/cli/conf.d/98-env.ini"
+run_fpm_container
+CMD=$(run_fcgi_container)
+rm_fpm_container
+fail_if_1 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 ###
 
 printf "[CLI] Check custom INI loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini"
-CMD=$(cat << EOF
-docker container run --rm \
-  ${IMAGE} bash -c "php --ini"
-EOF
+EXPECTS="/etc/php/${PHP_MAJOR}/cli/conf.d/99-custom.ini"
+CMD=$(
+    docker container run --rm \
+        ${CLI} php --ini
 )
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 printf "[FPM] Check custom INI loaded"
-EXPECTS="/etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini"
-CMD=$(cat << EOF
-curl -s jtreminio-testing.localhost/index.php
-EOF
+EXPECTS="/etc/php/${PHP_MAJOR}/fpm/conf.d/99-custom.ini"
+run_fpm_container
+CMD=$(run_fcgi_container)
+rm_fpm_container
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+###
+
+printf "[CLI] Check display_errors set to default value [Off]"
+EXPECTS="Off"
+CMD=$(
+    docker container run --rm \
+        ${CLI} php -r "echo ini_get('display_errors');"
 )
-RESULT=$(bash -c "${CMD}" | grep -c "${EXPECTS}")
-if [ ${RESULT} -ne 1 ]; then
-    printf " ${FAIL}"
-else
-    printf " ${PASS}"
-fi
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+printf "[FPM] Check display_errors set to default value [Off]"
+EXPECTS="Off"
+run_fpm_container
+CMD=$(run_fcgi_container display_errors)
+rm_fpm_container
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+###
+
+printf "[CLI] Check display_errors accepts override value [On]"
+EXPECTS="On"
+CMD=$(
+    docker container run --rm \
+        -e PHP.display_errors=On \
+        ${CLI} php -r "echo ini_get('display_errors');"
+)
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+printf "[FPM] Check display_errors accepts override value [On]"
+EXPECTS="On"
+run_fpm_container "PHP.display_errors=On"
+CMD=$(run_fcgi_container display_errors)
+rm_fpm_container
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+###
+
+printf "[CLI] Check Xdebug not loaded by default"
+EXPECTS="Xdebug"
+CMD=$(
+    docker container run --rm \
+        ${CLI} php -v
+)
+fail_if_1 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+printf "[FPM] Check Xdebug not loaded by default"
+EXPECTS="Xdebug"
+run_fpm_container
+CMD=$(run_fcgi_container)
+rm_fpm_container
+fail_if_1 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+###
+
+printf "[CLI] Check Xdebug loaded by env var"
+EXPECTS="Xdebug"
+CMD=$(
+    docker container run --rm \
+        -e PHP_INI_SCAN_DIR=:/p/xdebug \
+        ${CLI} php -v
+)
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+printf "[FPM] Check Xdebug loaded by env var"
+EXPECTS="Xdebug"
+run_fpm_container "PHP_INI_SCAN_DIR=:/p/xdebug"
+CMD=$(run_fcgi_container)
+rm_fpm_container
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
+
+###
+
+printf "[CLI] Check Xdebug CLI auto-sets PHP_INI_SCAN_DIR"
+EXPECTS="/p/xdebug/xdebug.ini"
+CMD=$(
+    docker container run --rm \
+        -e PHP_INI_SCAN_DIR=:/p/xdebug \
+        ${CLI} php --ini
+)
+fail_if_0 $(echo "${CMD}" | grep -c "${EXPECTS}")
 
 rm_fpm_container
+rm_test_network
