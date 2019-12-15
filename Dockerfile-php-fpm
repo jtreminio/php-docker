@@ -23,6 +23,7 @@ RUN chmod +x /docker_build/bin_* &&\
 # Save INI and FPM conf files into non-versioned directory
 # This makes managing them across several different PHP versions easier
 COPY files/php/fpm.conf /etc/php/fpm.conf
+RUN ln -s /etc/php/fpm.conf /etc/php/${PHP_VER}/fpm/php-fpm.conf
 
 RUN rm -rf /etc/apache2
 
