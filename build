@@ -1,103 +1,182 @@
 #!/usr/bin/env bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BUILD_TYPE="all"
+RUN_TESTS="no"
 
-# 7.4.0
-PHP_VERSION="${1}"
-# 7.4
-PHP_MAJOR=$(echo ${PHP_VERSION} | cut -d . -f -2)
-
-if [[ -z "${PHP_VERSION// }" ]]; then
+function show_help() {
     cat << EOF
-Usage: build PHP_VERSION
-Builds CLI, FPM, Apache and Nginx images for PHP PHP_VERSION
 
-Example: build 7.4.0
+Usage: build [OPTION]
+Builds CLI, FPM, Apache and Nginx images for PHP
+
+-v          full version, 7.4.13 or 7.3.25 or 7.2.34, etc
+            if -b=env this flag is not accepted
+-b          build type, "all", "env", "cli", "fpm", "apache", "nginx"
+            defaults to "all"
+-p          push image(s) to docker hub
+-t          run tests after build
+            defaults to "no"
+-h          display this help and exit
+
+Example: build -v 7.4.0 -b all -p yes
     Builds these images - jtreminio:php-cli
                         - jtreminio:php
                         - jtreminio:php-apache
                         - jtreminio:php-nginx
 EOF
-fi
 
-if [[ ${PHP_VERSION} != "env" ]] && [[ "${PHP_VERSION// }" == "${PHP_MAJOR// }" ]]; then
-    printf "PHP_VERSION must be in 7.4.0 format"
+    exit 0
+}
+
+while getopts ":v:b:p:t:h" opt; do
+    case $opt in
+        v) PHP_VERSION="$OPTARG"
+        ;;
+        b) BUILD_TYPE="$OPTARG"
+        ;;
+        p) PUSH_TO_HUB="$OPTARG"
+        ;;
+        t) RUN_TESTS="$OPTARG"
+        ;;
+        h) show_help
+        ;;
+        \?) echo "Invalid option -$OPTARG" >&2
+        ;;
+    esac
+done
+
+if [[ "${BUILD_TYPE}" != "all" &&
+      "${BUILD_TYPE}" != "env" &&
+      "${BUILD_TYPE}" != "cli" &&
+      "${BUILD_TYPE}" != "fpm" &&
+      "${BUILD_TYPE}" != "apache" &&
+      "${BUILD_TYPE}" != "nginx"
+   ]]; then
+    printf "invalid build (-b) value: ${BUILD_TYPE}\n"
+    show_help
     exit 1
 fi
 
-REGEXP="([0-9]{1}\.)+([0-9]{1}\.)+([0-9]{1,2})"
-if [[ ${PHP_VERSION} != "env" ]] && ! [[ ${PHP_VERSION} =~ ${REGEXP} ]]; then
-    printf "PHP_VERSION must be in 7.4.0 format"
+if [[ "${PUSH_TO_HUB}" != "yes" &&
+      "${PUSH_TO_HUB}" != "no"
+   ]]; then
+    printf "invalid push to hub (-p) value: ${PUSH_TO_HUB}\n"
+    show_help
     exit 1
 fi
 
-IS_LATEST=0
-if [[ ${PHP_MAJOR} == 7.4 ]]; then
-    IS_LATEST=1
+if [[ "${RUN_TESTS}" != "yes" &&
+      "${RUN_TESTS}" != "no"
+   ]]; then
+    printf "invalid run tests (-t) value: ${RUN_TESTS}\n"
+    show_help
+    exit 1
+fi
+
+if [[ ${BUILD_TYPE} == "env" ]] && ! [[ -z ${PHP_VERSION} ]]; then
+    printf "version (-v) flag not accepted when -b=env\n"
+    show_help
+    exit 1
+fi
+
+if [[ ${BUILD_TYPE} != "env" ]] && [[ -z ${PHP_VERSION} ]]; then
+    printf "invalid version (-v) value: ${PHP_VERSION}\n"
+    show_help
+    exit 1
+fi
+
+if [[ ${BUILD_TYPE} != "env" ]]; then
+    # 7.4.13 -> 7.4
+    PHP_MAJOR=$(echo ${PHP_VERSION} | cut -d . -f -2)
+
+    if [[ "${PHP_VERSION// }" == "${PHP_MAJOR// }" ]]; then
+        printf "PHP_VERSION must be in 7.4.0 format"
+        exit 1
+    fi
+
+    REGEXP="([0-9]{1}\.)+([0-9]{1}\.)+([0-9]{1,2})"
+    if ! [[ ${PHP_VERSION} =~ ${REGEXP} ]]; then
+        printf "PHP_VERSION must be in 7.4.0 format"
+        exit 1
+    fi
 fi
 
 function main() {
-    if [[ PHP_VERSION == "env" ]]; then
+    if [[ ${BUILD_TYPE} == "env" ]]; then
         build_env_image
 
-        docker image push jtreminio/phpenv:latest
+        if [[ ${PUSH_TO_HUB} == "yes" ]]; then
+            docker image push jtreminio/phpenv:latest
+        fi
         exit 0
     fi
 
-    build_php_cli_image ${PHP_MAJOR} ${PHP_VERSION}
-    build_php_fpm_image ${PHP_MAJOR} ${PHP_VERSION}
-    build_apache_image ${PHP_MAJOR} ${PHP_VERSION}
-    build_nginx_image ${PHP_MAJOR} ${PHP_VERSION}
+    case ${BUILD_TYPE} in
+        cli)
+            build_php_cli_image ${PHP_MAJOR} ${PHP_VERSION}
+        ;;
+        fpm)
+            build_php_fpm_image ${PHP_MAJOR} ${PHP_VERSION}
+        ;;
+        apache)
+            build_apache_image ${PHP_MAJOR} ${PHP_VERSION}
+        ;;
+        nginx)
+            build_nginx_image ${PHP_MAJOR} ${PHP_VERSION}
+        ;;
+        *)
+            build_php_cli_image ${PHP_MAJOR} ${PHP_VERSION}
+            build_php_fpm_image ${PHP_MAJOR} ${PHP_VERSION}
+            build_apache_image ${PHP_MAJOR} ${PHP_VERSION}
+            build_nginx_image ${PHP_MAJOR} ${PHP_VERSION}
+        ;;
+    esac
 
-    bash "${DIR}/test" ${PHP_VERSION}
+    if [[ ${RUN_TESTS} == "yes" ]]; then
+        bash "${DIR}/test" ${PHP_VERSION}
+    fi
 
     if [[ $? -ne 0 ]]; then
         exit 1
     fi
 
-    docker image push jtreminio/php-cli:${PHP_MAJOR}
-    docker image push jtreminio/php-cli:${PHP_VERSION}
-    docker image push jtreminio/php:${PHP_MAJOR}
-    docker image push jtreminio/php:${PHP_VERSION}
-    docker image push jtreminio/php-apache:${PHP_MAJOR}
-    docker image push jtreminio/php-apache:${PHP_VERSION}
-    docker image push jtreminio/php-nginx:${PHP_MAJOR}
-    docker image push jtreminio/php-nginx:${PHP_VERSION}
-
-    if [[ ${IS_LATEST} -eq 1 ]]; then
-        docker image push jtreminio/php-cli:latest
-        docker image push jtreminio/php:latest
-        docker image push jtreminio/php-apache:latest
-        docker image push jtreminio/php-nginx:latest
-    fi
-
-    cat << EOF
-        The following images were built and pushed:
-
-        jtreminio/php-cli:${PHP_MAJOR}
-        jtreminio/php-cli:${PHP_VERSION}
-        jtreminio/php:${PHP_MAJOR}
-        jtreminio/php:${PHP_VERSION}
-        jtreminio/php-apache:${PHP_MAJOR}
-        jtreminio/php-apache:${PHP_VERSION}
-        jtreminio/php-nginx:${PHP_MAJOR}
-        jtreminio/php-nginx:${PHP_VERSION}
-EOF
-
-    if [[ ${IS_LATEST} -eq 1 ]]; then
-        cat << EOF
-        docker image push jtreminio/php-cli:latest
-        docker image push jtreminio/php:latest
-        docker image push jtreminio/php-apache:latest
-        docker image push jtreminio/php-nginx:latest
-EOF
+    if [[ "${PUSH_TO_HUB}" == "yes" ]]; then
+        case ${BUILD_TYPE} in
+            cli)
+                docker image push jtreminio/php-cli:${PHP_MAJOR}
+                docker image push jtreminio/php-cli:${PHP_VERSION}
+            ;;
+            fpm)
+                docker image push jtreminio/php:${PHP_MAJOR}
+                docker image push jtreminio/php:${PHP_VERSION}
+            ;;
+            apache)
+                docker image push jtreminio/php-apache:${PHP_MAJOR}
+                docker image push jtreminio/php-apache:${PHP_VERSION}
+            ;;
+            nginx)
+                docker image push jtreminio/php-nginx:${PHP_MAJOR}
+                docker image push jtreminio/php-nginx:${PHP_VERSION}
+            ;;
+            *)
+                docker image push jtreminio/php-cli:${PHP_MAJOR}
+                docker image push jtreminio/php-cli:${PHP_VERSION}
+                docker image push jtreminio/php:${PHP_MAJOR}
+                docker image push jtreminio/php:${PHP_VERSION}
+                docker image push jtreminio/php-apache:${PHP_MAJOR}
+                docker image push jtreminio/php-apache:${PHP_VERSION}
+                docker image push jtreminio/php-nginx:${PHP_MAJOR}
+                docker image push jtreminio/php-nginx:${PHP_VERSION}
+            ;;
+        esac
     fi
 }
 
 function build_env_image() {
     echo "Building ENV"
     docker image build \
-      -t jtreminio/env:latest \
+      -t jtreminio/phpenv:latest \
       -f Dockerfile-env \
       .
 
@@ -111,18 +190,12 @@ function build_php_cli_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
 
-    LATEST_TAG=""
-    if [[ ${IS_LATEST} -eq 1 ]]; then
-        LATEST_TAG="-t jtreminio/php-cli:latest"
-    fi
-
     echo "Building PHP-CLI ${PHP_MINOR}"
     docker image build \
       --build-arg PHP_VER=${PHP_MAJOR} \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php-cli:${PHP_MAJOR} \
       -t jtreminio/php-cli:${PHP_MINOR} \
-      ${LATEST_TAG} \
       -f Dockerfile-php-cli \
       .
 
@@ -136,18 +209,12 @@ function build_php_fpm_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
 
-    LATEST_TAG=""
-    if [[ ${IS_LATEST} -eq 1 ]]; then
-        LATEST_TAG="-t jtreminio/php:latest"
-    fi
-
     echo "Building PHP-CLI + PHP-FPM ${PHP_MINOR}"
     docker image build \
       --build-arg PHP_VER=${PHP_MAJOR} \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php:${PHP_MAJOR} \
       -t jtreminio/php:${PHP_MINOR} \
-      ${LATEST_TAG} \
       -f Dockerfile-php-fpm \
       .
 
@@ -161,17 +228,11 @@ function build_apache_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
 
-    LATEST_TAG=""
-    if [[ ${IS_LATEST} -eq 1 ]]; then
-        LATEST_TAG="-t jtreminio/php-apache:latest"
-    fi
-
     echo "Building PHP ${PHP_MAJOR} + Apache"
     docker image build \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php-apache:${PHP_MAJOR} \
       -t jtreminio/php-apache:${PHP_MINOR} \
-      ${LATEST_TAG} \
       -f Dockerfile-apache \
       .
 
@@ -185,17 +246,11 @@ function build_nginx_image() {
     PHP_MAJOR="${1}"
     PHP_MINOR="${2}"
 
-    LATEST_TAG=""
-    if [[ ${IS_LATEST} -eq 1 ]]; then
-        LATEST_TAG="-t jtreminio/php-nginx:latest"
-    fi
-
     echo "Building PHP ${PHP_MAJOR} + Nginx"
     docker image build \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php-nginx:${PHP_MAJOR} \
       -t jtreminio/php-nginx:${PHP_MINOR} \
-      ${LATEST_TAG} \
       -f Dockerfile-nginx \
       .
 

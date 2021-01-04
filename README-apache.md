@@ -1,6 +1,7 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `jtreminio/php-apache:7.4`, `jtreminio/php-apache:latest`
+* `jtreminio/php-apache:8.0`
+* `jtreminio/php-apache:7.4`
 * `jtreminio/php-apache:7.3`
 * `jtreminio/php-apache:7.2`
 * `jtreminio/php-apache:7.1`

@@ -1,6 +1,7 @@
 #### Supported tags
 
-* `jtreminio/php:7.4`, `jtreminio/php:latest`
+* `jtreminio/php:8.0`
+* `jtreminio/php:7.4`
 * `jtreminio/php:7.3`
 * `jtreminio/php:7.2`
 * `jtreminio/php:7.1`
@@ -168,6 +169,18 @@ PHP 7.0 and 7.1 also come with
 PHP 7.2 also comes with
 
 * php-lua
+
+PHP 8.0 does not currently have support for the following modules:
+
+* apcu_bc
+* geoip
+* gnupg
+* radius
+* ssh2
+* stomp
+* uploadprogress
+
+Additionally, PHP 8.0 has native JSON support so there is no need for a JSON module.
 
 You can enable these modules by using the `PHP_INI_SCAN_DIR` env var. A special shortcut has been created to more easily add modules:
 

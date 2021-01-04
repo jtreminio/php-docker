@@ -1,5 +1,12 @@
 FROM phusion/baseimage:0.11
 
+# Upgrade security packages only
+RUN apt-get update &&\
+    apt-get -s dist-upgrade |grep "^Inst" |grep -i securi &&\
+    apt-get autoclean &&\
+    apt-get -y --purge autoremove &&\
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
+
 ENV PHP.allow_url_fopen=1 \
     PHP.allow_url_include= \
     PHP.always_populate_raw_post_data= \

@@ -1,6 +1,7 @@
 #### Supported tags and respective `Dockerfile` links
 
-* `jtreminio/php-nginx:7.4`, `jtreminio/php-nginx:latest`
+* `jtreminio/php-nginx:8.0`
+* `jtreminio/php-nginx:7.4`
 * `jtreminio/php-nginx:7.3`
 * `jtreminio/php-nginx:7.2`
 * `jtreminio/php-nginx:7.1`

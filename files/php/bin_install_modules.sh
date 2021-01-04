@@ -25,7 +25,7 @@ if [[ ${PHP_VER} == 7.2 ]]; then
     "
 fi
 
-# 7.3 & 7.4 have no modules unavailable to other versions
+# 7.3+ have no modules unavailable to other versions
 
 # These modules are installed and enabled by default
 MODULES_DEFAULT="
@@ -68,6 +68,21 @@ MODULES_OPTIONAL="
     php${PHP_VER}-zmq
     php-xdebug
 "
+
+# These modules not available on PHP 8.0
+if [[ ${PHP_VER} == 8.0 ]]; then
+    MODULES_DEFAULT=$(echo $MODULES_DEFAULT | sed "s/php${PHP_VER}-json//")
+    MODULES_OPTIONAL=$(
+        echo $MODULES_OPTIONAL |
+        sed "s/php${PHP_VER}-apcu-bc//" |
+        sed "s/php${PHP_VER}-geoip//" |
+        sed "s/php${PHP_VER}-gnupg//" |
+        sed "s/php${PHP_VER}-radius//" |
+        sed "s/php${PHP_VER}-ssh2//" |
+        sed "s/php${PHP_VER}-stomp//" |
+        sed "s/php${PHP_VER}-uploadprogress//"
+    )
+fi
 
 apt-get update &&\
 apt-get install --no-install-recommends --no-install-suggests -y \

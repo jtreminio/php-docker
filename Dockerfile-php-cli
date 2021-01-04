@@ -20,8 +20,9 @@ ENV PHP_VER=$PHP_VER
 COPY ./files/php/bin_* /docker_build/
 RUN chmod +x /docker_build/bin_* &&\
     /docker_build/bin_install_modules.sh ${PHP_VER} &&\
-    /docker_build/bin_clean_directories.sh ${PHP_VER} &&\
-    /docker_build/bin_install_composer.sh &&\
+    /docker_build/bin_clean_directories.sh ${PHP_VER}
+
+RUN /docker_build/bin_install_composer.sh &&\
     /docker_build/bin_rm_symlinked_ini.sh ${PHP_VER} cli &&\
     /docker_build/bin_link_ini.sh ${PHP_VER} &&\
     rm -rf /docker_build
