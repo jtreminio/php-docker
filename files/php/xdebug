@@ -13,4 +13,4 @@ if [[ ${PHP_INI_SCAN_DIR} != *"xdebug"* ]]; then
 fi
 
 PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR} \
-XDEBUG_CONFIG="idekey=xdebug" php -dxdebug.remote_enable=1 "$@"
+XDEBUG_MODE=debug XDEBUG_SESSION=xdebug php -dxdebug.mode=debug "$@"
