@@ -42,12 +42,6 @@ function rm_symlinked_ini() {
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-uuid.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-zmq.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-xdebug.ini
-
-    # Not present in PHP >= 7.3
-    rm -f \
-        /etc/php/${PHP_VER}/${TYPE}/conf.d/20-lua.ini \
-        /etc/php/${PHP_VER}/${TYPE}/conf.d/20-mcrypt.ini \
-        /etc/php/${PHP_VER}/${TYPE}/conf.d/20-sodium.ini
 }
 
 # Inject our default INI and conf files.

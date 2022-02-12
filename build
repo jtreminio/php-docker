@@ -19,7 +19,7 @@ Builds CLI, FPM, Apache and Nginx images for PHP
             defaults to "no"
 -h          display this help and exit
 
-Example: build -v 7.4.0 -b all -p yes
+Example: build -v 8.1.0 -b all -p yes
     Builds these images - jtreminio:php-cli
                         - jtreminio:php
                         - jtreminio:php-apache
