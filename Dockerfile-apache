@@ -2,6 +2,7 @@ ARG PHP_VER_DOT
 FROM jtreminio/php:$PHP_VER_DOT
 LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 
+
 RUN printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/apache2/ubuntu bionic main\n" \
 >/etc/apt/sources.list.d/ondrej-apache2.list &&\
     apt-get update &&\
