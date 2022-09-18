@@ -11,11 +11,13 @@ EXTRA_MODS=(
     amqp
     apcu
     gd
+    gmp
     imagick
     mailparse
     memcached
     mongodb
     oauth
+    pcov
     pdo_sqlite
     raphf
     redis

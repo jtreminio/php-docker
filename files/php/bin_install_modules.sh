@@ -25,12 +25,14 @@ MODULES_OPTIONAL="
     php${PHP_VER}-amqp
     php${PHP_VER}-apcu
     php${PHP_VER}-gd
+    php${PHP_VER}-gmp
     php${PHP_VER}-igbinary
     php${PHP_VER}-imagick
     php${PHP_VER}-mailparse
     php${PHP_VER}-memcached
     php${PHP_VER}-mongodb
     php${PHP_VER}-oauth
+    php${PHP_VER}-pcov
     php${PHP_VER}-raphf
     php${PHP_VER}-redis
     php${PHP_VER}-soap
