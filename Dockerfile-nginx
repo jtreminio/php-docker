@@ -12,10 +12,10 @@ RUN printf "deb [arch=amd64] http://ppa.launchpad.net/ondrej/nginx/ubuntu bionic
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/{man,doc}
 
 # Set proper permissions for Nginx
-RUN chown -R www-data:www-data \
+RUN chown -R www:www \
         /var/lib/nginx \
         /var/www &&\
-    install -d -m 0755 -o www-data -g www-data \
+    install -d -m 0755 -o www -g www \
         /var/cache/nginx \
         /var/run/nginx &&\
     rm -rf /var/www/html
