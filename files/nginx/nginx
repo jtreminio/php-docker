@@ -19,14 +19,6 @@ if [[ ! -f /etc/nginx/sites-enabled/default ]]; then
     echo Using /etc/nginx/sites-available/${VHOST}
 
     ln -s /etc/nginx/sites-available/${VHOST} /etc/nginx/sites-enabled/default
-
-    # passing the CONTAINER_PORT env through perl doesn't work. This is a workaround
-    sed -i 's/\$[{]nginxport[}]/'${CONTAINER_PORT}'/' /etc/nginx/sites-enabled/default
 fi
 
-exec nginx -g "daemon off; env PHPFPM_XDEBUG_PORT=${PHPFPM_XDEBUG_PORT}; env CONTAINER_PORT=${CONTAINER_PORT};"
-
-
-
-
-
+exec nginx -g "daemon off; env PHPFPM_XDEBUG_PORT=${PHPFPM_XDEBUG_PORT};" # env CONTAINER_PORT=${CONTAINER_PORT};" tried to add this, but it doesn't work

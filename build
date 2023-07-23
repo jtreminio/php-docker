@@ -175,7 +175,7 @@ function main() {
 
 function build_env_image() {
     echo "Building ENV"
-    docker image build \
+    docker image build  \
       -t jtreminio/phpenv:latest \
       -f Dockerfile-env \
       .
@@ -191,7 +191,7 @@ function build_php_cli_image() {
     PHP_MINOR="${2}"
 
     echo "Building PHP-CLI ${PHP_MINOR}"
-    docker image build --no-cache \
+    docker image build \
       --build-arg PHP_VER=${PHP_MAJOR} \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php-cli:${PHP_MAJOR} \
@@ -210,7 +210,7 @@ function build_php_fpm_image() {
     PHP_MINOR="${2}"
 
     echo "Building PHP-CLI + PHP-FPM ${PHP_MINOR}"
-    docker image build --no-cache \
+    docker image build \
       --build-arg PHP_VER=${PHP_MAJOR} \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php:${PHP_MAJOR} \
@@ -229,7 +229,7 @@ function build_apache_image() {
     PHP_MINOR="${2}"
 
     echo "Building PHP ${PHP_MAJOR} + Apache"
-    docker image build --no-cache \
+    docker image build \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php-apache:${PHP_MAJOR} \
       -t jtreminio/php-apache:${PHP_MINOR} \
