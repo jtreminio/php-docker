@@ -175,7 +175,7 @@ function main() {
 
 function build_env_image() {
     echo "Building ENV"
-    docker image build \
+    docker image build  \
       -t jtreminio/phpenv:latest \
       -f Dockerfile-env \
       .
@@ -247,7 +247,7 @@ function build_nginx_image() {
     PHP_MINOR="${2}"
 
     echo "Building PHP ${PHP_MAJOR} + Nginx"
-    docker image build \
+    docker image build --no-cache \
       --build-arg PHP_VER_DOT=${PHP_MINOR} \
       -t jtreminio/php-nginx:${PHP_MAJOR} \
       -t jtreminio/php-nginx:${PHP_MINOR} \

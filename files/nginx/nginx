@@ -21,4 +21,4 @@ if [[ ! -f /etc/nginx/sites-enabled/default ]]; then
     ln -s /etc/nginx/sites-available/${VHOST} /etc/nginx/sites-enabled/default
 fi
 
-exec nginx -g "daemon off; env PHPFPM_XDEBUG_PORT=${PHPFPM_XDEBUG_PORT};"
+exec nginx -g "daemon off; env PHPFPM_XDEBUG_PORT=${PHPFPM_XDEBUG_PORT};" # env CONTAINER_PORT=${CONTAINER_PORT};" tried to add this, but it doesn't work

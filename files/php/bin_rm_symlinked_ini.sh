@@ -22,6 +22,7 @@ function rm_symlinked_ini() {
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-apcu.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/25-apcu_bc.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-gd.ini \
+        /etc/php/${PHP_VER}/${TYPE}/conf.d/20-gmp.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-geoip.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-gnupg.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-imagick.ini \
@@ -29,6 +30,7 @@ function rm_symlinked_ini() {
         /etc/php/${PHP_VER}/${TYPE}/conf.d/25-memcached.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-mongodb.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-oauth.ini \
+        /etc/php/${PHP_VER}/${TYPE}/conf.d/20-pcov.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-pdo_sqlite.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-radius.ini \
         /etc/php/${PHP_VER}/${TYPE}/conf.d/20-raphf.ini \

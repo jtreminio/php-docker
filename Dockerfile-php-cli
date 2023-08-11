@@ -4,6 +4,14 @@ LABEL maintainer="Juan Treminio <jtreminio@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 
+
+# set container user
+ARG WWWGID=1000
+ARG WWWUID=1000
+RUN groupadd --force -g $WWWGID www \
+ && useradd -ms /bin/bash --no-user-group -g $WWWGID -u $WWWUID www
+
+
 RUN update-alternatives --install /bin/sh sh /bin/bash 100
 
 RUN mkdir /docker_build
@@ -32,7 +40,7 @@ RUN /docker_build/bin_install_composer.sh &&\
 COPY files/php/php.ini /etc/php/php.ini
 
 # Default sessions directory
-RUN install -d -m 0755 -o www-data -g www-data /var/lib/php/sessions
+RUN install -d -m 0755 -o www -g www /var/lib/php/sessions
 
 # Xdebug CLI debugging
 COPY files/php/xdebug /usr/bin/xdebug
@@ -40,4 +48,4 @@ RUN chmod +x /usr/bin/xdebug
 
 WORKDIR /etc/php/${PHP_VER}
 
-USER www-data
+USER www
